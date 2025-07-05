@@ -12,11 +12,15 @@
   "dependencies": {
     "discord.js": "^14.21.0",
     "dotenv": "^17.0.1",
+    "source-map-loader": "^5.0.0",
+    "ts-loader": "^9.5.2",
     "yarn": "^1.22.22"
   },
   "devDependencies": {
+    "@types/node": "^24.0.10",
     "eslint": "^8.57.1",
     "prettier": "^3.6.2",
-    "prettier-eslint": "^16.4.2"
+    "prettier-eslint": "^16.4.2",
+    "ts-node": "^10.9.2"
   }
 }
