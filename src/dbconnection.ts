@@ -1,21 +1,20 @@
-import { BetTypes, SpreadTypes, User, Bet, Wager } from "./types";
+import { BetTypes, SpreadTypes, Fiend, Bet, Wager } from "./types";
 
-const usersMap: { [userId: string]: User } = {};
+const usersMap: { [userId: string]: Fiend } = {};
 const betsMap: { [betId: number]: Bet } = {};
 let highestBetId = 0;
 const wagersMap: { [wagerId: number]: Wager } = {};
 let highestWagerId = 0;
 
-export function setFiendBucks(userId: string, amount: number): User {
+export function setFiendBucks(userId: string, amount: number): Fiend {
   if (!usersMap[userId]) {
-    usersMap[userId] = { id: userId, balance: amount };
-    return usersMap[userId];
+    throw new Error("User does not exist");
   }
   usersMap[userId].balance = amount;
   return usersMap[userId];
 }
 
-export function addFiendBucks(userId: string, amount: number): User {
+export function addFiendBucks(userId: string, amount: number): Fiend {
   if (!usersMap[userId]) {
     throw new Error("User does not exist");
   }
@@ -23,15 +22,20 @@ export function addFiendBucks(userId: string, amount: number): User {
   return usersMap[userId];
 }
 
-export function getFiendBucks(userId: string): number | undefined {
-  if (!usersMap[userId]) {
-    usersMap[userId] = { id: userId, balance: 100 }; // Default balance if user does not exist
-  }
-  return usersMap[userId].balance;
+export function getFiend(userId: string): Fiend | undefined {
+  return usersMap[userId];
 }
 
-export function getAllUsers(): User[] {
+export function getAllFiends(): Fiend[] {
   return Object.values(usersMap);
+}
+
+export function createFiend(userId: string, name: string): Fiend {
+  if (usersMap[userId]) {
+    throw new Error("User already exists");
+  }
+  usersMap[userId] = { id: userId, name, balance: 100 }; // Default balance
+  return usersMap[userId];
 }
 
 export function createBet(

@@ -11,7 +11,13 @@ import {
   Message,
 } from "discord.js";
 import { commands } from "./commands";
-import { setFiendBucks, getFiendBucks, getAllUsers } from "./dbconnection";
+import {
+  createFiend,
+  getFiend,
+  getAllFiends,
+  setFiendBucks,
+} from "./dbconnection";
+import { create } from "domain";
 
 // Create a new client instance
 const client = new Client({
@@ -62,7 +68,7 @@ client.on("interactionCreate", async (interaction) => {
         break;
 
       case "leaderboard": {
-        const users = getAllUsers();
+        const users = getAllFiends();
         if (users.length === 0) {
           await interaction.reply("No users found!");
           return;
@@ -71,11 +77,13 @@ client.on("interactionCreate", async (interaction) => {
         // Sort users by balance in descending order
         users.sort((a, b) => b.balance - a.balance);
 
+        console.log("Leaderboard:", users);
+
         // Create leaderboard message
         const leaderboard = users
           .map(
             (user, index) =>
-              `${index + 1}. ${user.id} - ${user.balance} FiendBucks`,
+              `${index + 1}. <@${user.id}> - ${user.balance} FiendBucks`, // todo don't ping users here
           )
           .join("\n");
 
@@ -85,12 +93,22 @@ client.on("interactionCreate", async (interaction) => {
 
       case "balance": {
         const user = interaction.options.getUser("user", true);
-        const amount = getFiendBucks(user.id);
-        await interaction.reply(`${user} has ${amount} FiendBucks!`);
+        const fiend = getFiend(user.id);
+
+        if (!fiend) {
+          createFiend(user.id, user.displayName);
+          await interaction.reply(
+            `New Fiend Created for ${user.displayName}! with 100 FiendBucks`,
+          );
+          break;
+        }
+
+        await interaction.reply(`${user} has ${fiend.balance} FiendBucks!`);
         break;
       }
 
       case "bankrupt": {
+        // TODO decide if this should be automatic or manual
         const user = interaction.options.getUser("user", true);
         setFiendBucks(user.id, 100);
         await interaction.reply(`${user} has been reset to 100 FiendBucks!`);

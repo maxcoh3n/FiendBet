@@ -8,9 +8,9 @@ export enum SpreadTypes {
   UNDER,
 }
 
-export interface User {
+export interface Fiend {
   id: string;
-  name?: string;
+  name: string;
   balance: number; // User's balance in FiendBucks
 }
 
