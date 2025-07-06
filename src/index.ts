@@ -2,23 +2,12 @@
 import * as dotenv from "dotenv";
 dotenv.config();
 
-import {
-  Client,
-  GatewayIntentBits,
-  REST,
-  Routes,
-  ChatInputCommandInteraction,
-  Message,
-} from "discord.js";
+import { Client, GatewayIntentBits, REST, Routes } from "discord.js";
 import { commands } from "./commands";
-import {
-  createFiend,
-  getFiend,
-  getAllFiends,
-  setFiendBucks,
-} from "./dbconnection";
-import { create } from "domain";
-
+import leaderboardResponse from "./botResponses/leaderboard";
+import balanceResponse from "./botResponses/balance";
+import createBetResponse from "./botResponses/createbet";
+import betsResponse from "./botResponses/bets";
 // Create a new client instance
 const client = new Client({
   intents: [
@@ -68,50 +57,22 @@ client.on("interactionCreate", async (interaction) => {
         break;
 
       case "leaderboard": {
-        const users = getAllFiends();
-        if (users.length === 0) {
-          await interaction.reply("No users found!");
-          return;
-        }
-
-        // Sort users by balance in descending order
-        users.sort((a, b) => b.balance - a.balance);
-
-        console.log("Leaderboard:", users);
-
-        // Create leaderboard message
-        const leaderboard = users
-          .map(
-            (user, index) =>
-              `${index + 1}. <@${user.id}> - ${user.balance} FiendBucks`, // todo don't ping users here
-          )
-          .join("\n");
-
-        await interaction.reply(`**Leaderboard:**\n${leaderboard}`);
+        await leaderboardResponse(interaction);
         break;
       }
 
       case "balance": {
-        const user = interaction.options.getUser("user", true);
-        const fiend = getFiend(user.id);
-
-        if (!fiend) {
-          createFiend(user.id, user.displayName);
-          await interaction.reply(
-            `New Fiend Created for ${user.displayName}! with 100 FiendBucks`,
-          );
-          break;
-        }
-
-        await interaction.reply(`${user} has ${fiend.balance} FiendBucks!`);
+        await balanceResponse(interaction);
         break;
       }
 
-      case "bankrupt": {
-        // TODO decide if this should be automatic or manual
-        const user = interaction.options.getUser("user", true);
-        setFiendBucks(user.id, 100);
-        await interaction.reply(`${user} has been reset to 100 FiendBucks!`);
+      case "createbet": {
+        await createBetResponse(interaction);
+        break;
+      }
+
+      case "bets": {
+        await betsResponse(interaction);
         break;
       }
 
@@ -154,10 +115,14 @@ client.on("messageCreate", async (message) => {
           `You replied to my message: "${repliedMessage.content}"`,
         );
 
-        // You can also check the content of the original message
-        if (repliedMessage.content.includes("Hello World")) {
-          await message.reply("Thanks for replying to my hello message! 👋");
-        }
+        // TODO:
+        /*
+        If the original message was a bet creation message,
+        first check that the user exists. if not, create them.
+        Then, check to make sure the message content is valid for a wager
+        If it is, create a wager for the user.
+        If it is not, reply to the user with an error message.
+        */
       }
     } catch (error) {
       console.error("Error fetching replied message:", error);

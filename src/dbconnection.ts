@@ -6,14 +6,6 @@ let highestBetId = 0;
 const wagersMap: { [wagerId: number]: Wager } = {};
 let highestWagerId = 0;
 
-export function setFiendBucks(userId: string, amount: number): Fiend {
-  if (!usersMap[userId]) {
-    throw new Error("User does not exist");
-  }
-  usersMap[userId].balance = amount;
-  return usersMap[userId];
-}
-
 export function addFiendBucks(userId: string, amount: number): Fiend {
   if (!usersMap[userId]) {
     throw new Error("User does not exist");
@@ -69,6 +61,10 @@ export function createBet(
 
 export function getBet(id: number): Bet | null {
   return betsMap[id] || null;
+}
+
+export function getUnsettledBets(): Bet[] {
+  return Object.values(betsMap).filter((bet) => !bet.isSettled);
 }
 
 /*

@@ -9,6 +9,9 @@ export const commands = [
     .setName("leaderboard")
     .setDescription("view all users FiendBucks balances"),
   new SlashCommandBuilder()
+    .setName("bets")
+    .setDescription("view all unsettled bets"),
+  new SlashCommandBuilder()
     .setName("balance")
     .setDescription("view user's balance")
     .addUserOption((option) =>
@@ -30,7 +33,7 @@ export const commands = [
             .setDescription("What is the bet")
             .setRequired(true),
         )
-        .addStringOption((option) =>
+        .addIntegerOption((option) =>
           option
             .setName("line")
             .setDescription(
