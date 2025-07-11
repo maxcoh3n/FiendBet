@@ -8,7 +8,7 @@ This bot keeps track of bets for friends (fiends)
 - Create an .env file locally with this format:
   TOKEN = <the token>
   ClIENT_ID = <the client id>
-- run node index.js
+- navigate to the repo and execute `npx ts-node src/index.ts` in your terminal
 
 Ex usage:
 /createbet moneyline description: Shai cries line: +200

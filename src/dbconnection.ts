@@ -1,33 +1,35 @@
+import { get } from "http";
 import { BetTypes, SpreadTypes, Fiend, Bet, Wager } from "./types";
+import { getPayout } from "./util";
 
-const usersMap: { [userId: string]: Fiend } = {};
+const fiendsMap: { [userId: string]: Fiend } = {};
 const betsMap: { [betId: number]: Bet } = {};
 let highestBetId = 0;
 const wagersMap: { [wagerId: number]: Wager } = {};
 let highestWagerId = 0;
 
 export function addFiendBucks(userId: string, amount: number): Fiend {
-  if (!usersMap[userId]) {
+  if (!fiendsMap[userId]) {
     throw new Error("User does not exist");
   }
-  usersMap[userId].balance += amount;
-  return usersMap[userId];
+  fiendsMap[userId].balance += amount;
+  return fiendsMap[userId];
 }
 
 export function getFiend(userId: string): Fiend | undefined {
-  return usersMap[userId];
+  return fiendsMap[userId];
 }
 
 export function getAllFiends(): Fiend[] {
-  return Object.values(usersMap);
+  return Object.values(fiendsMap);
 }
 
 export function createFiend(userId: string, name: string): Fiend {
-  if (usersMap[userId]) {
-    throw new Error("User already exists");
+  if (fiendsMap[userId]) {
+    throw new Error("Fiend already exists");
   }
-  usersMap[userId] = { id: userId, name, balance: 100 }; // Default balance
-  return usersMap[userId];
+  fiendsMap[userId] = { id: userId, name, balance: 100 }; // Default balance
+  return fiendsMap[userId];
 }
 
 export function createBet(
@@ -35,7 +37,7 @@ export function createBet(
   type: BetTypes,
   moneyLine: number | undefined = undefined,
   spread: number | undefined = undefined,
-): number {
+): Bet {
   const id = ++highestBetId;
 
   if (type === BetTypes.MONEYLINE && !moneyLine) {
@@ -56,7 +58,7 @@ export function createBet(
     spread,
     result: undefined,
   };
-  return id;
+  return betsMap[id];
 }
 
 export function getBet(id: number): Bet | null {
@@ -82,7 +84,10 @@ export function closeBet(id: number): void {
  * Also pays out results to users who wagered on the bet.
  * The result can be any value that indicates the outcome of the bet.
  */
-export function settleBet(id: number, result: any): void {
+export function settleBet(
+  id: number,
+  result: boolean | SpreadTypes,
+): [Fiend, number][] {
   if (!betsMap[id]) {
     throw new Error("Bet does not exist");
   }
@@ -101,9 +106,21 @@ export function settleBet(id: number, result: any): void {
     (wager) => wager.betId === id && !wager.isSettled,
   );
 
+  const results: [Fiend, number][] = [];
+
   for (const wager of wagers) {
-    // TODO: Implement payout logic
+    wager.isSettled = true;
+    wager.result = result;
+    const fiend = fiendsMap[wager.userId];
+    let payout = 0;
+    if (wager.choice === result) {
+      payout = getPayout(wager.amount, betsMap[id].type, betsMap[id].moneyLine);
+      fiend.balance += payout;
+    }
+    results.push([fiend, payout - wager.amount]);
   }
+
+  return results;
 }
 
 export function createWager(
@@ -112,7 +129,7 @@ export function createWager(
   amount: number,
   choice: boolean | SpreadTypes,
 ): number {
-  if (!usersMap[userId]) {
+  if (!fiendsMap[userId]) {
     throw new Error("User does not exist");
   }
   if (!betsMap[betId] || !betsMap[betId].isOpen) {
@@ -151,6 +168,5 @@ export function createWager(
     isSettled: false,
   };
 
-  usersMap[userId].balance -= amount; // Deduct the wager amount from user's fiend bucks
   return wagerId;
 }

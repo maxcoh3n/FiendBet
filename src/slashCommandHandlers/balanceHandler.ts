@@ -1,7 +1,7 @@
 import { ChatInputCommandInteraction } from "discord.js";
 import { getFiend, createFiend } from "../dbconnection";
 
-export default async function balanceResponse(
+export default async function HandleBalance(
   interaction: ChatInputCommandInteraction,
 ) {
   const user = interaction.options.getUser("user", true);

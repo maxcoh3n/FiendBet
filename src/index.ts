@@ -4,10 +4,12 @@ dotenv.config();
 
 import { Client, GatewayIntentBits, REST, Routes } from "discord.js";
 import { commands } from "./commands";
-import leaderboardResponse from "./botResponses/leaderboard";
-import balanceResponse from "./botResponses/balance";
-import createBetResponse from "./botResponses/createbet";
-import betsResponse from "./botResponses/bets";
+import HandleLeaderboard from "./slashCommandHandlers/leaderboardHandler";
+import HandleBalance from "./slashCommandHandlers/balanceHandler";
+import HandleCreateBet from "./slashCommandHandlers/createbetHandler";
+import HandleBets from "./slashCommandHandlers/betsHandler";
+import handleMessageReply from "./replyHandlers/messageReplyHandler";
+
 // Create a new client instance
 const client = new Client({
   intents: [
@@ -57,22 +59,22 @@ client.on("interactionCreate", async (interaction) => {
         break;
 
       case "leaderboard": {
-        await leaderboardResponse(interaction);
+        await HandleLeaderboard(interaction);
         break;
       }
 
       case "balance": {
-        await balanceResponse(interaction);
+        await HandleBalance(interaction);
         break;
       }
 
       case "createbet": {
-        await createBetResponse(interaction);
+        await HandleCreateBet(interaction);
         break;
       }
 
       case "bets": {
-        await betsResponse(interaction);
+        await HandleBets(interaction);
         break;
       }
 
@@ -110,19 +112,7 @@ client.on("messageCreate", async (message) => {
 
       // Check if the original message was from our bot
       if (repliedMessage.author.id === client.user?.id) {
-        // This is a reply to our bot's message!
-        await message.reply(
-          `You replied to my message: "${repliedMessage.content}"`,
-        );
-
-        // TODO:
-        /*
-        If the original message was a bet creation message,
-        first check that the user exists. if not, create them.
-        Then, check to make sure the message content is valid for a wager
-        If it is, create a wager for the user.
-        If it is not, reply to the user with an error message.
-        */
+        await handleMessageReply(message, repliedMessage);
       }
     } catch (error) {
       console.error("Error fetching replied message:", error);

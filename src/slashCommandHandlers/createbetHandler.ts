@@ -1,8 +1,10 @@
 import { ChatInputCommandInteraction } from "discord.js";
 import { createBet } from "../dbconnection";
 import { BetTypes } from "../types";
+import { betToString } from "../util";
+import { BetCreationTips, NewBetMessage } from "../strings";
 
-export default async function createBetResponse(
+export default async function HandleCreateBet(
   interaction: ChatInputCommandInteraction,
 ) {
   const subcommand = interaction.options.getSubcommand(true);
@@ -40,14 +42,14 @@ async function handleMoneylineBet(interaction: ChatInputCommandInteraction) {
   }
 
   // Create the bet in the database
-  const betId = await createBet(description, BetTypes.MONEYLINE, line);
+  const bet = await createBet(description, BetTypes.MONEYLINE, line);
 
-  if (betId) {
-    await interaction.reply(`Moneyline bet created successfully! ID: ${betId}`);
-  } else {
+  if (bet) {
     await interaction.reply(
-      "Failed to create moneyline bet. Please try again.",
+      `${NewBetMessage}\n${betToString(bet)}\nTo place a wager, reply to this message \"Yes\" or \"No\" and the amount you want to wager.\n${BetCreationTips}`,
     );
+  } else {
+    await interaction.reply("Failed to create spread bet. Please try again.");
   }
 }
 
@@ -62,15 +64,17 @@ async function handleSpreadBet(interaction: ChatInputCommandInteraction) {
   }
 
   // Create the bet in the database
-  const betId = await createBet(
+  const bet = await createBet(
     description,
     BetTypes.SPREAD,
     undefined, // this sucks, why isn't this cool like python
     spread,
   );
 
-  if (betId) {
-    await interaction.reply(`Spread bet created successfully! ID: ${betId}`);
+  if (bet) {
+    await interaction.reply(
+      `${NewBetMessage}\n${betToString(bet)}\nTo place a wager, reply to this message \"Over\" or \"Under\" and the amount you want to wager.\n${BetCreationTips}`,
+    );
   } else {
     await interaction.reply("Failed to create spread bet. Please try again.");
   }

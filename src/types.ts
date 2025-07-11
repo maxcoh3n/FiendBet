@@ -4,8 +4,8 @@ export enum BetTypes {
 }
 
 export enum SpreadTypes {
-  OVER,
-  UNDER,
+  OVER = "Over",
+  UNDER = "Under",
 }
 
 export interface Fiend {
@@ -22,7 +22,7 @@ export interface Bet {
   spread?: number; // For spread bets
   isOpen: boolean;
   isSettled: boolean;
-  result?: boolean | number; // Result can be true/false for moneyline or a number for spread
+  result?: boolean | SpreadTypes; // Result can be true/false for moneyline or a number for spread
 }
 
 export interface Wager {
@@ -32,5 +32,5 @@ export interface Wager {
   amount: number;
   isSettled: boolean;
   choice: boolean | SpreadTypes; // Choice can be true/false for moneyline or OVER/UNDER for spread
-  result?: boolean | number; // Result can be true/false for moneyline or a number for spread
+  result?: boolean | SpreadTypes; // Result can be true/false for moneyline or a OVER/UNDER for spread
 }
