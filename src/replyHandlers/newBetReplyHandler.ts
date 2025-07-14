@@ -13,7 +13,12 @@ import { BetTypes, SpreadTypes } from "../common/types";
 import { semanticYes, semanticNo, STARTING_BALANCE } from "../common/constants";
 import { createWager } from "../database/dbController";
 import { Fiend, Bet } from "../common/types";
-import { getBetId, getNumberFromMessage, pingFiend } from "../common/util";
+import {
+  getBetId,
+  getNumberFromMessage,
+  getServerNicknameWithMessage,
+  pingFiend,
+} from "../common/util";
 
 export default async function handleNewBetReply(
   message: Message,
@@ -22,9 +27,12 @@ export default async function handleNewBetReply(
   let fiend = getFiend(message.author.id);
 
   if (!fiend) {
-    fiend = createFiend(message.author.id, message.author.displayName);
+    fiend = createFiend(
+      message.author.id,
+      await getServerNicknameWithMessage(message.author, message),
+    );
     await message.reply(
-      `New Fiend Created for ${message.author.displayName}! with ${STARTING_BALANCE} FiendBucks`,
+      `New Fiend Created for ${fiend.name} with ${STARTING_BALANCE} FiendBucks!`,
     );
   }
 

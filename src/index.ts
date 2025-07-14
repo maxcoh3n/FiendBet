@@ -10,6 +10,7 @@ import HandleCreateBet from "./slashCommandHandlers/createbetHandler";
 import HandleBets from "./slashCommandHandlers/betsHandler";
 import handleMessageReply from "./replyHandlers/messageReplyHandler";
 import HandleHelp from "./slashCommandHandlers/helpHandler";
+import HandleAward from "./slashCommandHandlers/awardHandler";
 
 // Create a new client instance
 const client = new Client({
@@ -76,6 +77,11 @@ client.on("interactionCreate", async (interaction) => {
 
       case "bets": {
         await HandleBets(interaction);
+        break;
+      }
+
+      case "award": {
+        await HandleAward(interaction);
         break;
       }
 

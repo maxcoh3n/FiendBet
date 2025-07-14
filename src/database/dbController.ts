@@ -14,6 +14,7 @@ import {
   getFiendStmt,
   getAllFiendsStmt,
   insertFiendStmt,
+  insertAwardStmt,
   updateFiendBalanceStmt,
   updateFiendCreditStmt,
   insertBetStmt,
@@ -279,4 +280,23 @@ export function createWager(
 export function getFiendWagersByBet(betId: number): FiendWager[] {
   const rows = getFiendWagersByBetStmt.all(betId) as FiendWagerRow[];
   return rows.map(dbRowToFiendWager);
+}
+
+export function awardFiend(
+  userId: string,
+  amount: number,
+  description: string,
+): Fiend {
+  const fiend = getFiendStmt.get(userId) as FiendRow | undefined;
+  if (!fiend) {
+    throw new Error("User does not exist");
+  }
+
+  // Add the award to the user's balance
+  updateFiendBalanceStmt.run(amount, userId);
+  insertAwardStmt.run(userId, amount, description); // Assuming insertAwardStmt is defined to log the award
+
+  // Optionally, you could log this award in a separate awards table
+  // For now, we just update the balance
+  return dbRowToFiend(getFiendStmt.get(userId) as FiendRow);
 }

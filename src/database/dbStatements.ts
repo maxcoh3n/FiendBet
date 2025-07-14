@@ -48,3 +48,7 @@ export const getWagersByBetAllStmt = db.prepare(
 export const getFiendWagersByBetStmt = db.prepare(
   "SELECT f.name, w.* FROM wagers w JOIN fiends f ON w.userId = f.id WHERE w.betId = ? AND w.isSettled = 0",
 );
+
+export const insertAwardStmt = db.prepare(
+  "INSERT INTO awards (userId, amount, description) VALUES (?, ?, ?)",
+);

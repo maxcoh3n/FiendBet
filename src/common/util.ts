@@ -1,4 +1,5 @@
 import { BetTypes, Bet, FiendWager } from "./types";
+import { User, ChatInputCommandInteraction, Message } from "discord.js";
 
 export function betToString(bet: Bet): string {
   return `${bet.description}\n${
@@ -59,4 +60,21 @@ export function getNumberFromMessage(messageContent: string): number | false {
 
 export function pingFiend(userId: string): string {
   return `<@${userId}>`;
+}
+
+export async function getServerNickname(
+  user: User,
+  interaction: ChatInputCommandInteraction,
+): Promise<string> {
+  const member = await interaction.guild?.members.fetch(user.id);
+
+  return member?.nickname || user.displayName;
+}
+
+export async function getServerNicknameWithMessage(
+  user: User,
+  message: Message,
+): Promise<string> {
+  const member = await message.guild?.members.fetch(message.author.id);
+  return member?.nickname ?? message.author.displayName;
 }

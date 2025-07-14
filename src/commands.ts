@@ -21,6 +21,27 @@ export const commands = [
         .setRequired(true),
     ),
   new SlashCommandBuilder()
+    .setName("award")
+    .setDescription("award a user some FiendBucks")
+    .addUserOption((option) =>
+      option
+        .setName("user")
+        .setDescription("The user to award")
+        .setRequired(true),
+    )
+    .addIntegerOption((option) =>
+      option
+        .setName("amount")
+        .setDescription("The amount of FiendBucks to award")
+        .setRequired(true),
+    )
+    .addStringOption((option) =>
+      option
+        .setName("reason")
+        .setDescription("The reason for the award")
+        .setRequired(false),
+    ),
+  new SlashCommandBuilder()
     .setName("createbet")
     .setDescription("Create a new bet")
     .addSubcommand((subcommand) =>

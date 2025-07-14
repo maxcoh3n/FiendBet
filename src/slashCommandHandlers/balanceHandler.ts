@@ -1,6 +1,7 @@
 import { ChatInputCommandInteraction } from "discord.js";
 import { getFiend, createFiend } from "../database/dbController";
 import { STARTING_BALANCE } from "../common/constants";
+import { getServerNickname } from "../common/util";
 
 export default async function HandleBalance(
   interaction: ChatInputCommandInteraction,
@@ -9,14 +10,15 @@ export default async function HandleBalance(
   const fiend = getFiend(user.id);
 
   if (!fiend) {
-    createFiend(user.id, user.displayName);
+    const name = await getServerNickname(user, interaction);
+    createFiend(user.id, name);
     await interaction.reply(
-      `New Fiend Created for ${user.displayName}! with ${STARTING_BALANCE} FiendBucks`,
+      `New Fiend Created for ${name} with ${STARTING_BALANCE} FiendBucks!`,
     );
     return;
   }
 
   await interaction.reply(
-    `${user} has ${fiend.balance} FiendBucks, and ${fiend.credit || 0} on credit!`,
+    `${fiend.name} has ${fiend.balance} FiendBucks, and ${fiend.credit || 0} on credit!`,
   );
 }
