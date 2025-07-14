@@ -1,155 +1,42 @@
-import { BetTypes, SpreadTypes, Fiend, Bet, Wager } from ".././common/types";
-import { getPayout } from ".././common/util";
-import { STARTING_BALANCE } from ".././common/constants";
+import {
+  BetTypes,
+  SpreadTypes,
+  Fiend,
+  Bet,
+  Wager,
+  FiendWager,
+} from "../common/types";
+import { getPayout } from "../common/util";
+import { STARTING_BALANCE } from "../common/constants";
 import db from "./db";
-
-// Database row types
-interface FiendRow {
-  id: string;
-  name: string;
-  balance: number;
-  credit: number;
-  bankruptcies: number;
-  createdAt: string;
-  updatedAt: string;
-}
-
-interface BetRow {
-  id: number;
-  description: string;
-  type: string;
-  moneyLine: number | undefined;
-  spread: number | null;
-  isOpen: number;
-  isSettled: number;
-  result: string | null;
-  date: string | null;
-  createdAt: string;
-  updatedAt: string;
-}
-
-interface WagerRow {
-  id: number;
-  userId: string;
-  betId: number;
-  amount: number;
-  choice: string;
-  isSettled: number;
-  result: string | null;
-  createdAt: string;
-  updatedAt: string;
-}
-
-// Prepared statements for fiends
-const getFiendStmt = db.prepare("SELECT * FROM fiends WHERE id = ?");
-const getAllFiendsStmt = db.prepare("SELECT * FROM fiends");
-const insertFiendStmt = db.prepare(
-  "INSERT INTO fiends (id, name, balance, credit, bankruptcies) VALUES (?, ?, ?, ?, ?)",
-);
-const updateFiendBalanceStmt = db.prepare(
-  "UPDATE fiends SET balance = balance + ?, updatedAt = CURRENT_TIMESTAMP WHERE id = ?",
-);
-const updateFiendCreditStmt = db.prepare(
-  "UPDATE fiends SET credit = credit + ?, updatedAt = CURRENT_TIMESTAMP WHERE id = ?",
-);
-
-// Prepared statements for bets
-const getBetStmt = db.prepare("SELECT * FROM bets WHERE id = ?");
-const getUnsettledBetsStmt = db.prepare(
-  "SELECT * FROM bets WHERE isSettled = 0",
-);
-const insertBetStmt = db.prepare(
-  "INSERT INTO bets (description, type, moneyLine, spread, isOpen, isSettled) VALUES (?, ?, ?, ?, ?, ?)",
-);
-const closeBetStmt = db.prepare(
-  "UPDATE bets SET isOpen = 0, updatedAt = CURRENT_TIMESTAMP WHERE id = ?",
-);
-const settleBetStmt = db.prepare(
-  "UPDATE bets SET isSettled = 1, result = ?, isOpen = 0, updatedAt = CURRENT_TIMESTAMP WHERE id = ?",
-);
-const voidBetStmt = db.prepare(
-  "UPDATE bets SET isOpen = 0, isSettled = 1, updatedAt = CURRENT_TIMESTAMP WHERE id = ?",
-);
-
-// Prepared statements for wagers
-const insertWagerStmt = db.prepare(
-  "INSERT INTO wagers (userId, betId, amount, choice, isSettled) VALUES (?, ?, ?, ?, ?)",
-);
-const getWagersByBetStmt = db.prepare(
-  "SELECT * FROM wagers WHERE betId = ? AND isSettled = 0",
-);
-const settleWagerStmt = db.prepare(
-  "UPDATE wagers SET isSettled = 1, result = ?, updatedAt = CURRENT_TIMESTAMP WHERE id = ?",
-);
-const getWagersByBetAllStmt = db.prepare(
-  "SELECT * FROM wagers WHERE betId = ?",
-);
-
-// Helper functions for type conversion
-function serializeChoice(choice: boolean | SpreadTypes): string {
-  return typeof choice === "boolean" ? choice.toString() : choice;
-}
-
-function deserializeChoice(choice: string): boolean | SpreadTypes {
-  if (choice === "true") return true;
-  if (choice === "false") return false;
-  return choice as SpreadTypes;
-}
-
-function serializeResult(
-  result: boolean | SpreadTypes | undefined,
-): string | null {
-  if (result === undefined) return null;
-  return typeof result === "boolean" ? result.toString() : result;
-}
-
-function deserializeResult(
-  result: string | null,
-): boolean | SpreadTypes | undefined {
-  if (result === null) return undefined;
-  if (result === "true") return true;
-  if (result === "false") return false;
-  return result as SpreadTypes;
-}
-
-// Convert database row to Fiend object
-function dbRowToFiend(row: FiendRow): Fiend {
-  return {
-    id: row.id,
-    name: row.name,
-    balance: row.balance,
-    credit: row.credit || 0,
-    bankruptcies: row.bankruptcies || 0,
-  };
-}
-
-// Convert database row to Bet object
-function dbRowToBet(row: BetRow): Bet {
-  return {
-    id: row.id,
-    description: row.description,
-    type: row.type as BetTypes,
-    moneyLine: row.moneyLine || undefined,
-    spread: row.spread || undefined,
-    isOpen: Boolean(row.isOpen),
-    isSettled: Boolean(row.isSettled),
-    result: deserializeResult(row.result),
-    date: row.date ? new Date(row.date) : undefined,
-  };
-}
-
-// Convert database row to Wager object
-function dbRowToWager(row: WagerRow): Wager {
-  return {
-    id: row.id,
-    userId: row.userId,
-    betId: row.betId,
-    amount: row.amount,
-    isSettled: Boolean(row.isSettled),
-    choice: deserializeChoice(row.choice),
-    result: deserializeResult(row.result),
-  };
-}
+import { FiendRow, BetRow, WagerRow, FiendWagerRow } from "./models";
+import {
+  getFiendStmt,
+  getAllFiendsStmt,
+  insertFiendStmt,
+  updateFiendBalanceStmt,
+  updateFiendCreditStmt,
+  insertBetStmt,
+  getBetStmt,
+  getUnsettledBetsStmt,
+  closeBetStmt,
+  voidBetStmt,
+  settleBetStmt,
+  insertWagerStmt,
+  getWagersByBetAllStmt,
+  getWagersByBetStmt,
+  settleWagerStmt,
+  getFiendWagersByBetStmt,
+} from "./dbStatements";
+import {
+  serializeChoice,
+  deserializeChoice,
+  serializeResult,
+  dbRowToFiend,
+  dbRowToBet,
+  dbRowToWager,
+  dbRowToFiendWager,
+} from "./dbHelpers";
 
 export function addFiendBucks(userId: string, amount: number): Fiend {
   const existingFiend = getFiendStmt.get(userId) as FiendRow | undefined;
@@ -332,8 +219,8 @@ export function createWager(
   }
 
   const bet = getBetStmt.get(betId) as BetRow | undefined;
-  if (!bet || !bet.isOpen) {
-    throw new Error("Bet does not exist or is not open");
+  if (!bet) {
+    throw new Error("Bet does not exist");
   }
 
   if (bet.isSettled) {
@@ -341,7 +228,7 @@ export function createWager(
   }
 
   if (!bet.isOpen) {
-    throw new Error("Bet is not open for wagering");
+    throw new Error("Bet is no longer open for wagering");
   }
 
   if (
@@ -387,4 +274,9 @@ export function createWager(
 
   transaction();
   return [wager!, updatedFiend!];
+}
+
+export function getFiendWagersByBet(betId: number): FiendWager[] {
+  const rows = getFiendWagersByBetStmt.all(betId) as FiendWagerRow[];
+  return rows.map(dbRowToFiendWager);
 }

@@ -1,5 +1,5 @@
 import { ChatInputCommandInteraction } from "discord.js";
-import { getAllFiends } from "../database/dbconnection";
+import { getAllFiends } from "../database/dbController";
 
 export default async function HandleLeaderboard(
   interaction: ChatInputCommandInteraction,

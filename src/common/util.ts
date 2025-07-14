@@ -1,4 +1,4 @@
-import { BetTypes, Bet } from "./types";
+import { BetTypes, Bet, FiendWager } from "./types";
 
 export function betToString(bet: Bet): string {
   return `${bet.description}\n${
@@ -14,6 +14,12 @@ export function betToString(bet: Bet): string {
         (bet.spread && bet.spread > 0 ? "+" + bet.spread : bet.spread)
       : ""
   } ${bet.isOpen ? "" : "Closed" + "|"} | **ID:** ${bet.id} `;
+}
+
+export function fiendWagerToString(fiendWager: FiendWager): string {
+  return `${fiendWager.name} wagered **${fiendWager.amount}** on ${
+    fiendWager.choice
+  } `;
 }
 
 export function getPayout(

@@ -1,8 +1,10 @@
 import { ChatInputCommandInteraction } from "discord.js";
 
-import { getUnsettledBets } from "../database/dbconnection";
-import { BetTypes } from "../common/types";
-import { betToString } from "../common/util";
+import {
+  getUnsettledBets,
+  getFiendWagersByBet,
+} from "../database/dbController";
+import { betToString, fiendWagerToString } from "../common/util";
 
 export default async function HandleBets(
   interaction: ChatInputCommandInteraction,
@@ -15,10 +17,13 @@ export default async function HandleBets(
   }
 
   const betList = unsettledBets
-    .map(
-      (bet) => betToString(bet), // todo also add open wagers
-    )
+    .map((bet) => betToString(bet) + "\n" + formatFiendWagers(bet.id))
     .join("\n");
 
   await interaction.reply(`Unsettled Bets:\n${betList}`);
+}
+
+function formatFiendWagers(betId: number): string {
+  const wagers = getFiendWagersByBet(betId);
+  return wagers.map((wager) => "    " + fiendWagerToString(wager)).join("\n");
 }

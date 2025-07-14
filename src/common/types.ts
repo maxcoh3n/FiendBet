@@ -38,6 +38,10 @@ export interface Wager {
   result?: boolean | SpreadTypes; // Result can be true/false for moneyline or a OVER/UNDER for spread
 }
 
+export interface FiendWager extends Wager {
+  name: string; // Fiend's name from the join
+}
+
 export interface Award {
   id: number;
   userId: string; //id for winner of the award

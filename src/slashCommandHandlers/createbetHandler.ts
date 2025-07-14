@@ -1,5 +1,5 @@
 import { ChatInputCommandInteraction } from "discord.js";
-import { createBet } from "../database/dbconnection";
+import { createBet } from "../database/dbController";
 import { BetTypes } from "../common/types";
 import { betToString } from "../common/util";
 import { NewBetMessage } from "../common/constants";

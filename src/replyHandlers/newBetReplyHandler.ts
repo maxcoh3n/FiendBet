@@ -7,11 +7,11 @@ import {
   closeBet,
   settleBet,
   voidBet,
-} from "../database/dbconnection";
-import { getBet } from "../database/dbconnection";
+} from "../database/dbController";
+import { getBet } from "../database/dbController";
 import { BetTypes, SpreadTypes } from "../common/types";
 import { semanticYes, semanticNo, STARTING_BALANCE } from "../common/constants";
-import { createWager } from "../database/dbconnection";
+import { createWager } from "../database/dbController";
 import { Fiend, Bet } from "../common/types";
 import { getBetId, getNumberFromMessage, pingFiend } from "../common/util";
 
