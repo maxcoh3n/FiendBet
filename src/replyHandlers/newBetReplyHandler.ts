@@ -13,7 +13,6 @@ import { semanticYes, semanticNo, STARTING_BALANCE } from "../constants";
 import { createWager } from "../dbconnection";
 import { Fiend } from "../types";
 import { getBetId, getNumberFromMessage, pingFiend } from "../util";
-import { get } from "http";
 
 export default async function handleNewBetReply(
   message: Message,
@@ -132,7 +131,7 @@ async function wagerReplyHandler(
       }
 
       await message.reply(
-        "Please reply with 'Over' or 'Under' to place a wager.",
+        "Please reply with **wager** 'Over' or 'Under' to place a wager.",
       );
       return;
     }
@@ -144,9 +143,7 @@ async function wagerReplyHandler(
     wagerValue,
     betChoice,
   );
-  await message.reply(
-    `Wager of ${wagerValue} FiendBucks placed on bet ID ${betId} with choice: ${betChoice}. ${fiendResult.credit} FiendBucks on credit.`,
-  );
+  await message.react("✅");
 }
 
 async function closeBetReplyHandler(message: Message, repliedMessage: Message) {
@@ -252,7 +249,7 @@ async function settleBetReplyHandler(
       }
 
       await message.reply(
-        "Please reply with 'Over' or 'Under' to settle the bet, or the final exact count",
+        "Please reply with **settle** 'Over', 'Under' or the final exact count to settle the bet, ",
       );
       return;
 

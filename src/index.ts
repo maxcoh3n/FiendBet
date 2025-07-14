@@ -9,6 +9,7 @@ import HandleBalance from "./slashCommandHandlers/balanceHandler";
 import HandleCreateBet from "./slashCommandHandlers/createbetHandler";
 import HandleBets from "./slashCommandHandlers/betsHandler";
 import handleMessageReply from "./replyHandlers/messageReplyHandler";
+import HandleHelp from "./slashCommandHandlers/helpHandler";
 
 // Create a new client instance
 const client = new Client({
@@ -55,7 +56,7 @@ client.on("interactionCreate", async (interaction) => {
   try {
     switch (commandName) {
       case "help":
-        await interaction.reply("Hi, sorry this bot is still in development!");
+        await HandleHelp(interaction);
         break;
 
       case "leaderboard": {

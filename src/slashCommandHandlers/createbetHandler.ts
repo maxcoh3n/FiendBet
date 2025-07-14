@@ -2,7 +2,7 @@ import { ChatInputCommandInteraction } from "discord.js";
 import { createBet } from "../dbconnection";
 import { BetTypes } from "../types";
 import { betToString } from "../util";
-import { BetCreationTips, NewBetMessage } from "../constants";
+import { NewBetMessage } from "../constants";
 
 export default async function HandleCreateBet(
   interaction: ChatInputCommandInteraction,
@@ -46,7 +46,7 @@ async function handleMoneylineBet(interaction: ChatInputCommandInteraction) {
 
   if (bet) {
     await interaction.reply(
-      `${NewBetMessage}\n${betToString(bet)}\nTo place a wager, reply to this message \"Yes\" or \"No\" and the amount you want to wager.\n${BetCreationTips}`,
+      `${NewBetMessage}\n${betToString(bet)}\nTo place a wager, reply to this message **wager** \"Yes\" or \"No\" and the amount you want to wager.\n`,
     );
   } else {
     await interaction.reply("Failed to create spread bet. Please try again.");
@@ -73,7 +73,7 @@ async function handleSpreadBet(interaction: ChatInputCommandInteraction) {
 
   if (bet) {
     await interaction.reply(
-      `${NewBetMessage}\n${betToString(bet)}\nTo place a wager, reply to this message \"Over\" or \"Under\" and the amount you want to wager.\n${BetCreationTips}`,
+      `${NewBetMessage}\n${betToString(bet)}\nTo place a wager, reply to this message **wager** \"Over\" or \"Under\" and the amount you want to wager.`,
     );
   } else {
     await interaction.reply("Failed to create spread bet. Please try again.");

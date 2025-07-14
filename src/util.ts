@@ -8,7 +8,7 @@ export function betToString(bet: Bet): string {
           ? "+" + bet.moneyLine
           : bet.moneyLine)
       : ""
-  } ${
+  }${
     bet.type == BetTypes.SPREAD
       ? "**Spread:** " +
         (bet.spread && bet.spread > 0 ? "+" + bet.spread : bet.spread)
