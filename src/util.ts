@@ -18,18 +18,21 @@ export function betToString(bet: Bet): string {
 
 export function getPayout(
   wagerAmount: number,
+  isBetWon: boolean,
   type: BetTypes,
   moneyLine: number = 0,
 ): number {
+  if (!isBetWon) {
+    return -wagerAmount;
+  }
   if (type === BetTypes.MONEYLINE) {
     return (
-      wagerAmount * (moneyLine > 0 ? moneyLine / 100 : 100 / (-1 * moneyLine)) +
-      wagerAmount
+      wagerAmount * (moneyLine > 0 ? moneyLine / 100 : 100 / (-1 * moneyLine))
     );
   } else if (type === BetTypes.SPREAD) {
-    return wagerAmount * 2;
+    return wagerAmount;
   }
-  return wagerAmount; // Default case, no payout
+  return 0; // Default case, no payout
 }
 
 export function getBetId(messageContent: string): number | false {

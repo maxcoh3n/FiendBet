@@ -12,6 +12,8 @@ export interface Fiend {
   id: string;
   name: string;
   balance: number; // User's balance in FiendBucks
+  credit?: number; // Credit extended to user in open wagers
+  bankrupcies?: number;
 }
 
 export interface Bet {

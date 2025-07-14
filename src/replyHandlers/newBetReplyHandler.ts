@@ -1,6 +1,7 @@
 import { Message } from "discord.js";
 import {
   addFiendBucks,
+  addFiendCredit,
   createFiend,
   getFiend,
   closeBet,
@@ -8,7 +9,7 @@ import {
 } from "../dbconnection";
 import { getBet } from "../dbconnection";
 import { BetTypes, SpreadTypes } from "../types";
-import { semanticYes, semanticNo } from "../strings";
+import { semanticYes, semanticNo, STARTING_BALANCE } from "../constants";
 import { createWager } from "../dbconnection";
 import { Fiend } from "../types";
 import { getBetId, getNumberFromMessage, pingFiend } from "../util";
@@ -23,7 +24,7 @@ export default async function handleNewBetReply(
   if (!fiend) {
     fiend = createFiend(message.author.id, message.author.displayName);
     await message.reply(
-      `New Fiend Created for ${message.author.displayName}! with 100 FiendBucks`,
+      `New Fiend Created for ${message.author.displayName}! with ${STARTING_BALANCE} FiendBucks`,
     );
   }
 
@@ -49,14 +50,14 @@ async function wagerReplyHandler(
   repliedMessage: Message,
   fiend: Fiend,
 ) {
-  const wager = getNumberFromMessage(message.content);
+  const wagerValue = getNumberFromMessage(message.content);
 
-  if (!wager) {
+  if (!wagerValue) {
     await message.reply("Please reply with one positive number.");
     return;
   }
 
-  if (wager > fiend.balance) {
+  if (wagerValue > fiend.balance) {
     await message.reply(
       `You don't have enough FiendBucks to place this wager. Your balance is ${fiend.balance} FiendBucks.`,
     );
@@ -134,15 +135,17 @@ async function wagerReplyHandler(
         "Please reply with 'Over' or 'Under' to place a wager.",
       );
       return;
-
-      break;
     }
   }
 
-  createWager(message.author.id, betId, wager, betChoice);
-  const newFiend = addFiendBucks(message.author.id, wager * -1);
+  const [wager, fiendResult] = createWager(
+    message.author.id,
+    betId,
+    wagerValue,
+    betChoice,
+  );
   await message.reply(
-    `Wager of ${wager} FiendBucks placed on bet ID ${betId} with choice: ${betChoice}. ${newFiend.balance} FiendBucks remaining.`,
+    `Wager of ${wagerValue} FiendBucks placed on bet ID ${betId} with choice: ${betChoice}. ${fiendResult.credit} FiendBucks on credit.`,
   );
 }
 

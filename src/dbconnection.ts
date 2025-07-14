@@ -1,6 +1,7 @@
 import { get } from "http";
 import { BetTypes, SpreadTypes, Fiend, Bet, Wager } from "./types";
 import { getPayout } from "./util";
+import { STARTING_BALANCE } from "./constants";
 
 const fiendsMap: { [userId: string]: Fiend } = {};
 const betsMap: { [betId: number]: Bet } = {};
@@ -16,6 +17,17 @@ export function addFiendBucks(userId: string, amount: number): Fiend {
   return fiendsMap[userId];
 }
 
+export function addFiendCredit(userId: string, amount: number): Fiend {
+  if (!fiendsMap[userId]) {
+    throw new Error("User does not exist");
+  }
+  if (!fiendsMap[userId].credit) {
+    fiendsMap[userId].credit = 0;
+  }
+  fiendsMap[userId].credit += amount;
+  return fiendsMap[userId];
+}
+
 export function getFiend(userId: string): Fiend | undefined {
   return fiendsMap[userId];
 }
@@ -28,7 +40,7 @@ export function createFiend(userId: string, name: string): Fiend {
   if (fiendsMap[userId]) {
     throw new Error("Fiend already exists");
   }
-  fiendsMap[userId] = { id: userId, name, balance: 100 }; // Default balance
+  fiendsMap[userId] = { id: userId, name, balance: STARTING_BALANCE };
   return fiendsMap[userId];
 }
 
@@ -97,6 +109,7 @@ export function settleBet(
   }
 
   if (betsMap[id]) {
+    // todo must be SQL
     betsMap[id].isSettled = true;
     betsMap[id].result = result;
     betsMap[id].isOpen = false;
@@ -109,26 +122,34 @@ export function settleBet(
   const results: [Fiend, number][] = [];
 
   for (const wager of wagers) {
-    wager.isSettled = true;
+    wager.isSettled = true; //todo must be SQL
     wager.result = result;
     const fiend = fiendsMap[wager.userId];
     let payout = 0;
-    if (wager.choice === result) {
-      payout = getPayout(wager.amount, betsMap[id].type, betsMap[id].moneyLine);
-      fiend.balance += payout;
-    }
-    results.push([fiend, payout - wager.amount]);
+    const isBetWon = wager.choice === result;
+    payout = getPayout(
+      wager.amount,
+      isBetWon,
+      betsMap[id].type,
+      betsMap[id].moneyLine,
+    );
+    addFiendBucks(fiend.id, payout);
+    addFiendCredit(fiend.id, -wager.amount);
+
+    results.push([fiend, payout]);
   }
 
   return results;
 }
 
+/* creates awager for a bet and adds that amount to the fiend's credit balance
+ */
 export function createWager(
   userId: string,
   betId: number,
   amount: number,
   choice: boolean | SpreadTypes,
-): number {
+): [Wager, Fiend] {
   if (!fiendsMap[userId]) {
     throw new Error("User does not exist");
   }
@@ -168,5 +189,7 @@ export function createWager(
     isSettled: false,
   };
 
-  return wagerId;
+  const fiend = addFiendCredit(userId, amount);
+
+  return [wagersMap[wagerId], fiend];
 }

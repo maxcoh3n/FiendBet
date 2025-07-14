@@ -2,7 +2,7 @@ import { ChatInputCommandInteraction } from "discord.js";
 import { createBet } from "../dbconnection";
 import { BetTypes } from "../types";
 import { betToString } from "../util";
-import { BetCreationTips, NewBetMessage } from "../strings";
+import { BetCreationTips, NewBetMessage } from "../constants";
 
 export default async function HandleCreateBet(
   interaction: ChatInputCommandInteraction,
