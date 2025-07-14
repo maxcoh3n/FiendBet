@@ -1,8 +1,8 @@
 import { ChatInputCommandInteraction } from "discord.js";
 
-import { getUnsettledBets } from "../dbconnection";
-import { BetTypes } from "../types";
-import { betToString } from "../util";
+import { getUnsettledBets } from "../database/dbconnection";
+import { BetTypes } from "../common/types";
+import { betToString } from "../common/util";
 
 export default async function HandleBets(
   interaction: ChatInputCommandInteraction,

@@ -1,6 +1,6 @@
 import { ChatInputCommandInteraction } from "discord.js";
-import { getFiend, createFiend } from "../dbconnection";
-import { STARTING_BALANCE } from "../constants";
+import { getFiend, createFiend } from "../database/dbconnection";
+import { STARTING_BALANCE } from "../common/constants";
 
 export default async function HandleBalance(
   interaction: ChatInputCommandInteraction,

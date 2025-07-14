@@ -1,7 +1,6 @@
-import { get } from "http";
-import { BetTypes, SpreadTypes, Fiend, Bet, Wager } from "./types";
-import { getPayout } from "./util";
-import { STARTING_BALANCE } from "./constants";
+import { BetTypes, SpreadTypes, Fiend, Bet, Wager } from "./common/types";
+import { getPayout } from "./common/util";
+import { STARTING_BALANCE } from "./common/constants";
 
 const fiendsMap: { [userId: string]: Fiend } = {};
 const betsMap: { [betId: number]: Bet } = {};
@@ -89,6 +88,21 @@ export function closeBet(id: number): void {
   if (betsMap[id]) {
     betsMap[id].isOpen = false;
   }
+}
+
+export function voidBet(id: number): void {
+  if (!betsMap[id]) {
+    throw new Error("Bet does not exist");
+  }
+
+  if (betsMap[id].isSettled) {
+    throw new Error("Bet is already settled");
+  }
+
+  betsMap[id].isOpen = false;
+  betsMap[id].isSettled = true;
+
+  //todo subtract the amount from each wager from the fiend's credit and mark the wager as settled
 }
 
 /*

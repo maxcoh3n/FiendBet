@@ -1,6 +1,6 @@
 export enum BetTypes {
-  MONEYLINE,
-  SPREAD,
+  MONEYLINE = "Moneyline",
+  SPREAD = "Spread",
 }
 
 export enum SpreadTypes {
@@ -13,7 +13,7 @@ export interface Fiend {
   name: string;
   balance: number; // User's balance in FiendBucks
   credit?: number; // Credit extended to user in open wagers
-  bankrupcies?: number;
+  bankruptcies?: number;
 }
 
 export interface Bet {
@@ -25,6 +25,7 @@ export interface Bet {
   isOpen: boolean;
   isSettled: boolean;
   result?: boolean | SpreadTypes; // Result can be true/false for moneyline or a number for spread
+  date?: Date; // Date when the bet will likely be resolved so we can ping as a reminder
 }
 
 export interface Wager {
@@ -35,4 +36,11 @@ export interface Wager {
   isSettled: boolean;
   choice: boolean | SpreadTypes; // Choice can be true/false for moneyline or OVER/UNDER for spread
   result?: boolean | SpreadTypes; // Result can be true/false for moneyline or a OVER/UNDER for spread
+}
+
+export interface Award {
+  id: number;
+  userId: string; //id for winner of the award
+  amount: number;
+  description: string; // Reason for the award
 }

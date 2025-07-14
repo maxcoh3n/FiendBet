@@ -6,13 +6,14 @@ import {
   getFiend,
   closeBet,
   settleBet,
-} from "../dbconnection";
-import { getBet } from "../dbconnection";
-import { BetTypes, SpreadTypes } from "../types";
-import { semanticYes, semanticNo, STARTING_BALANCE } from "../constants";
-import { createWager } from "../dbconnection";
-import { Fiend } from "../types";
-import { getBetId, getNumberFromMessage, pingFiend } from "../util";
+  voidBet,
+} from "../database/dbconnection";
+import { getBet } from "../database/dbconnection";
+import { BetTypes, SpreadTypes } from "../common/types";
+import { semanticYes, semanticNo, STARTING_BALANCE } from "../common/constants";
+import { createWager } from "../database/dbconnection";
+import { Fiend, Bet } from "../common/types";
+import { getBetId, getNumberFromMessage, pingFiend } from "../common/util";
 
 export default async function handleNewBetReply(
   message: Message,
@@ -25,42 +26,6 @@ export default async function handleNewBetReply(
     await message.reply(
       `New Fiend Created for ${message.author.displayName}! with ${STARTING_BALANCE} FiendBucks`,
     );
-  }
-
-  if (message.content.includes("wager")) {
-    await wagerReplyHandler(message, repliedMessage, fiend);
-    return;
-  } else if (message.content.includes("close")) {
-    await closeBetReplyHandler(message, repliedMessage);
-    return;
-  } else if (message.content.includes("settle")) {
-    await settleBetReplyHandler(message, repliedMessage);
-    return;
-  } else {
-    await message.reply(
-      "Please reply to a bet creation message with 'wager', 'close', or 'settle'.",
-    );
-    return;
-  }
-}
-
-async function wagerReplyHandler(
-  message: Message,
-  repliedMessage: Message,
-  fiend: Fiend,
-) {
-  const wagerValue = getNumberFromMessage(message.content);
-
-  if (!wagerValue) {
-    await message.reply("Please reply with one positive number.");
-    return;
-  }
-
-  if (wagerValue > fiend.balance) {
-    await message.reply(
-      `You don't have enough FiendBucks to place this wager. Your balance is ${fiend.balance} FiendBucks.`,
-    );
-    return;
   }
 
   const betId = getBetId(repliedMessage.content);
@@ -78,16 +43,56 @@ async function wagerReplyHandler(
     return;
   }
 
+  if (message.content.includes("wager")) {
+    await wagerReplyHandler(message, repliedMessage, fiend, bet);
+    return;
+  } else if (message.content.includes("close")) {
+    await closeBetReplyHandler(message, repliedMessage, bet);
+    return;
+  } else if (message.content.includes("settle")) {
+    await settleBetReplyHandler(message, repliedMessage, bet);
+    return;
+  } else if (message.content.includes("void")) {
+    await voidBetReplyHandler(message, repliedMessage, bet);
+    return;
+  } else {
+    await message.reply(
+      "Please reply to a bet creation message with 'wager', 'close', or 'settle'.",
+    );
+    return;
+  }
+}
+
+async function wagerReplyHandler(
+  message: Message,
+  repliedMessage: Message,
+  fiend: Fiend,
+  bet: Bet,
+) {
+  const wagerValue = getNumberFromMessage(message.content);
+
+  if (!wagerValue) {
+    await message.reply("Please reply with one positive number.");
+    return;
+  }
+
+  if (wagerValue > fiend.balance) {
+    await message.reply(
+      `You don't have enough FiendBucks to place this wager. Your balance is ${fiend.balance} FiendBucks.`,
+    );
+    return;
+  }
+
   if (!bet.isOpen) {
     await message.reply(
-      `Bet ID ${betId} is closed. You cannot place a wager on it.`,
+      `Bet ID ${bet.id} is closed. You cannot place a wager on it.`,
     );
     return;
   }
 
   if (bet.isSettled) {
     await message.reply(
-      `Bet ID ${betId} has already been settled. You cannot place a wager on it.`,
+      `Bet ID ${bet.id} has already been settled. You cannot place a wager on it.`,
     );
     return;
   }
@@ -139,61 +144,36 @@ async function wagerReplyHandler(
 
   const [wager, fiendResult] = createWager(
     message.author.id,
-    betId,
+    bet.id,
     wagerValue,
     betChoice,
   );
   await message.react("✅");
 }
 
-async function closeBetReplyHandler(message: Message, repliedMessage: Message) {
-  const betId = getBetId(repliedMessage.content);
-
-  if (!betId) {
-    await message.reply(
-      `BetId not found in message. Something has gone horribly wrong.`,
-    );
-    return;
-  }
-  const bet = getBet(betId);
-
-  if (!bet) {
-    await message.reply("Bet not found. Please try again.");
-    return;
-  }
-
+async function closeBetReplyHandler(
+  message: Message,
+  repliedMessage: Message,
+  bet: Bet,
+) {
   if (bet.isSettled) {
     await message.reply("This bet has already been settled.");
     return;
   }
 
   bet.isOpen = false;
-  closeBet(betId);
+  closeBet(bet.id);
 
   await message.reply(
-    `Bet ID ${betId} has been closed. New bets can no longer be placed.`,
+    `Bet ID ${bet.id} has been closed. New bets can no longer be placed.`,
   );
 }
 
 async function settleBetReplyHandler(
   message: Message,
   repliedMessage: Message,
+  bet: Bet,
 ) {
-  const betId = getBetId(repliedMessage.content);
-
-  if (!betId) {
-    await message.reply(
-      `BetId not found in message. Something has gone horribly wrong.`,
-    );
-    return;
-  }
-  const bet = getBet(betId);
-
-  if (!bet) {
-    await message.reply("Bet not found. Please try again.");
-    return;
-  }
-
   if (bet.isSettled) {
     await message.reply("This bet has already been settled.");
     return;
@@ -257,7 +237,7 @@ async function settleBetReplyHandler(
     }
   }
 
-  const fiendsresults = settleBet(betId, betResult);
+  const fiendsresults = settleBet(bet.id, betResult);
   const resultsMessage = fiendsresults
     .map(
       ([fiend, profit]) =>
@@ -266,6 +246,25 @@ async function settleBetReplyHandler(
     .join("\n");
 
   await message.reply(
-    `Bet ID ${betId} has been settled with result: ${bet.result}.\nResults:\n${resultsMessage}`,
+    `Bet ID ${bet.id} has been settled with result: ${bet.result}.\nResults:\n${resultsMessage}`,
+  );
+}
+
+async function voidBetReplyHandler(
+  message: Message,
+  repliedMessage: Message,
+  bet: Bet,
+) {
+  if (bet.isSettled) {
+    await message.reply("This bet has already been settled.");
+    return;
+  }
+
+  bet.isOpen = false;
+  bet.isSettled = true;
+  voidBet(bet.id);
+
+  await message.reply(
+    `Bet ID ${bet.id} has been voided. All wagers have been uncredited.`,
   );
 }

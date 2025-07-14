@@ -1,5 +1,5 @@
 import { ChatInputCommandInteraction } from "discord.js";
-import { helpMessage } from "../constants";
+import { helpMessage } from "../common/constants";
 
 export default async function HandleHelp(
   interaction: ChatInputCommandInteraction,

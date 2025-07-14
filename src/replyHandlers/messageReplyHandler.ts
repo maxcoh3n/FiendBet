@@ -1,4 +1,4 @@
-import { NewBetMessage } from "../constants";
+import { NewBetMessage } from "../common/constants";
 import { Message } from "discord.js";
 import handleNewBetReply from "./newBetReplyHandler";
 
