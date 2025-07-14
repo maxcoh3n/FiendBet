@@ -2,7 +2,7 @@ import Database from "better-sqlite3";
 import fs from "fs";
 import path from "path";
 
-const db = new Database(path.join(__dirname, "../fiendBets.db"));
+const db = new Database(path.join(__dirname, "../../fiendBets.db"));
 
 // Create migrations table to track which migrations have been run
 db.exec(`
