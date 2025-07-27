@@ -1,5 +1,11 @@
-import { BetTypes, Bet, FiendWager } from "./types";
-import { User, ChatInputCommandInteraction, Message } from "discord.js";
+import {
+  ChatInputCommandInteraction,
+  Message,
+  MessageFlags,
+  User,
+} from "discord.js";
+import { semanticNo, semanticYes } from "./constants";
+import { Bet, BetTypes, FiendWager, Replyable } from "./types";
 
 export function betToString(bet: Bet): string {
   return `${bet.description}\n${
@@ -77,4 +83,27 @@ export async function getServerNicknameWithMessage(
 ): Promise<string> {
   const member = await message.guild?.members.fetch(message.author.id);
   return member?.nickname ?? message.author.displayName;
+}
+
+export function doesStringContainYes(s: string) {
+  return semanticYes.some((yes) => s.toLowerCase().includes(yes));
+}
+
+export function doesStringContainNo(s: string) {
+  return semanticNo.some((no) => s.toLowerCase().includes(no));
+}
+
+export async function sendMessageEphemeral(
+  interaction: Replyable,
+  message: string,
+) {
+  if (interaction instanceof ChatInputCommandInteraction) {
+    await interaction.reply({
+      content: `${message}`,
+      flags: MessageFlags.Ephemeral,
+    });
+    return;
+  }
+
+  await interaction.reply(message);
 }

@@ -1,24 +1,23 @@
 import { Message } from "discord.js";
+import { STARTING_BALANCE } from "../common/constants";
+import { Bet, BetTypes, Fiend, SpreadTypes } from "../common/types";
 import {
-  addFiendBucks,
-  addFiendCredit,
-  createFiend,
-  getFiend,
-  closeBet,
-  settleBet,
-  voidBet,
-} from "../database/dbController";
-import { getBet } from "../database/dbController";
-import { BetTypes, SpreadTypes } from "../common/types";
-import { semanticYes, semanticNo, STARTING_BALANCE } from "../common/constants";
-import { createWager } from "../database/dbController";
-import { Fiend, Bet } from "../common/types";
-import {
+  doesStringContainNo,
+  doesStringContainYes,
   getBetId,
   getNumberFromMessage,
   getServerNicknameWithMessage,
   pingFiend,
 } from "../common/util";
+import {
+  closeBet,
+  createFiend,
+  createWager,
+  getBet,
+  getFiend,
+  settleBet,
+  voidBet,
+} from "../database/dbController";
 
 export default async function handleNewBetReply(
   message: Message,
@@ -54,21 +53,23 @@ export default async function handleNewBetReply(
   if (message.content.includes("wager")) {
     await wagerReplyHandler(message, repliedMessage, fiend, bet);
     return;
-  } else if (message.content.includes("close")) {
+  }
+  if (message.content.includes("close")) {
     await closeBetReplyHandler(message, repliedMessage, bet);
     return;
-  } else if (message.content.includes("settle")) {
+  }
+  if (message.content.includes("settle")) {
     await settleBetReplyHandler(message, repliedMessage, bet);
     return;
-  } else if (message.content.includes("void")) {
+  }
+  if (message.content.includes("void")) {
     await voidBetReplyHandler(message, repliedMessage, bet);
     return;
-  } else {
-    await message.reply(
-      "Please reply to a bet creation message with 'wager', 'close', or 'settle'.",
-    );
-    return;
   }
+  await message.reply(
+    "Please reply to a bet creation message with 'wager', 'close', or 'settle'.",
+  );
+  return;
 }
 
 async function wagerReplyHandler(
@@ -109,13 +110,9 @@ async function wagerReplyHandler(
 
   switch (bet.type) {
     case BetTypes.MONEYLINE: {
-      if (
-        semanticYes.some((yes) => message.content.toLowerCase().includes(yes))
-      ) {
+      if (doesStringContainYes(message.content)) {
         betChoice = true;
-      } else if (
-        semanticNo.some((no) => message.content.toLowerCase().includes(no))
-      ) {
+      } else if (doesStringContainNo(message.content)) {
         betChoice = false;
       } else {
         await message.reply(
@@ -191,13 +188,9 @@ async function settleBetReplyHandler(
 
   switch (bet.type) {
     case BetTypes.MONEYLINE: {
-      if (
-        semanticYes.some((yes) => message.content.toLowerCase().includes(yes))
-      ) {
+      if (doesStringContainYes(message.content)) {
         betResult = true;
-      } else if (
-        semanticNo.some((no) => message.content.toLowerCase().includes(no))
-      ) {
+      } else if (doesStringContainNo(message.content)) {
         betResult = false;
       } else {
         await message.reply(
@@ -249,12 +242,12 @@ async function settleBetReplyHandler(
   const resultsMessage = fiendsresults
     .map(
       ([fiend, profit]) =>
-        `${pingFiend(fiend.id)} ${profit > 0 ? "gained" : "lost"} ${profit} FiendBucks From this wager, and now has ${fiend.balance}`,
+        `${pingFiend(fiend.id)} ${profit > 0 ? "gained" : "lost"} ${Math.abs(profit)} FiendBucks From this wager, and now has ${fiend.balance}`,
     )
     .join("\n");
 
   await message.reply(
-    `Bet ID ${bet.id} has been settled with result: ${bet.result}.\nResults:\n${resultsMessage}`,
+    `Bet ID ${bet.id} has been settled with result: ${betResult}.\nResults:\n${resultsMessage}`,
   );
 }
 

@@ -1,8 +1,9 @@
 import { ChatInputCommandInteraction } from "discord.js";
 import { createBet } from "../database/dbController";
 import { BetTypes } from "../common/types";
-import { betToString } from "../common/util";
+import { betToString, sendMessageEphemeral } from "../common/util";
 import { NewBetMessage } from "../common/constants";
+import { send } from "process";
 
 export default async function HandleCreateBet(
   interaction: ChatInputCommandInteraction,
@@ -31,7 +32,8 @@ async function handleMoneylineBet(interaction: ChatInputCommandInteraction) {
 
   // Validate input
   if (!description || line === undefined) {
-    await interaction.reply(
+    await sendMessageEphemeral(
+      interaction,
       "Please provide a valid description and moneyline.",
     );
     return;
@@ -49,7 +51,10 @@ async function handleMoneylineBet(interaction: ChatInputCommandInteraction) {
       `${NewBetMessage}\n${betToString(bet)}\nTo place a wager, reply to this message **wager** \"Yes\" or \"No\" and the amount you want to wager.\n`,
     );
   } else {
-    await interaction.reply("Failed to create spread bet. Please try again.");
+    await sendMessageEphemeral(
+      interaction,
+      "Failed to create spread bet. Please try again.",
+    );
   }
 }
 
@@ -59,7 +64,10 @@ async function handleSpreadBet(interaction: ChatInputCommandInteraction) {
 
   // Validate input
   if (!description || spread === undefined) {
-    await interaction.reply("Please provide a valid description and spread.");
+    await sendMessageEphemeral(
+      interaction,
+      "Please provide a valid description and spread.",
+    );
     return;
   }
 
@@ -76,6 +84,9 @@ async function handleSpreadBet(interaction: ChatInputCommandInteraction) {
       `${NewBetMessage}\n${betToString(bet)}\nTo place a wager, reply to this message **wager** \"Over\" or \"Under\" and the amount you want to wager.`,
     );
   } else {
-    await interaction.reply("Failed to create spread bet. Please try again.");
+    await sendMessageEphemeral(
+      interaction,
+      "Failed to create spread bet. Please try again.",
+    );
   }
 }

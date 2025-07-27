@@ -1,12 +1,10 @@
 import { ChatInputCommandInteraction } from "discord.js";
 import { helpMessage } from "../common/constants";
+import { sendMessageEphemeral } from "../common/util";
 
 export default async function HandleHelp(
   interaction: ChatInputCommandInteraction,
 ) {
-  await interaction.reply({
-    content: `${helpMessage}`,
-    ephemeral: true,
-  });
+  await sendMessageEphemeral(interaction, helpMessage);
   return;
 }

@@ -21,6 +21,21 @@ export const commands = [
         .setRequired(true),
     ),
   new SlashCommandBuilder()
+    .setName("settle")
+    .setDescription("settle a bet")
+    .addIntegerOption((option) =>
+      option
+        .setName("bet_id")
+        .setDescription("The Id of the bet to settle")
+        .setRequired(true),
+    )
+    .addStringOption((option) =>
+      option
+        .setName("result")
+        .setDescription("The result of the bet (True/False, Over/Under)")
+        .setRequired(true),
+    ),
+  new SlashCommandBuilder()
     .setName("award")
     .setDescription("award a user some FiendBucks")
     .addUserOption((option) =>

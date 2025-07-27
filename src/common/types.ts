@@ -1,3 +1,5 @@
+import { ChatInputCommandInteraction, Message } from "discord.js";
+
 export enum BetTypes {
   MONEYLINE = "Moneyline",
   SPREAD = "Spread",
@@ -48,3 +50,5 @@ export interface Award {
   amount: number;
   description: string; // Reason for the award
 }
+
+export type Replyable = Message | ChatInputCommandInteraction;
