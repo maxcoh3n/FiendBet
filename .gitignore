@@ -4,3 +4,4 @@ package-lock.json
 .vscode
 fiendBets.db
 *.DS_Store
+build

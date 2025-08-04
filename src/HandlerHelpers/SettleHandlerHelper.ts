@@ -4,7 +4,9 @@ import {
   getNumberFromMessage,
   doesStringContainNo,
   doesStringContainYes,
+  pingFiend,
 } from "../common/util";
+import { settleBet } from "../database/dbController";
 
 export async function handleSettleHelper(
   replyable: Replyable,
@@ -82,7 +84,7 @@ export async function handleSettleHelper(
     )
     .join("\n");
 
-  await message.reply(
+  await replyable.reply(
     `Bet ID ${bet.id} has been settled with result: ${bet.result}.\nResults:\n${resultsMessage}`,
   );
 }
