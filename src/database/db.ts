@@ -2,7 +2,8 @@ import Database from "better-sqlite3";
 import fs from "fs";
 import path from "path";
 
-const db = new Database("fiendBets.db");
+const DATABASE_URL = process.env["DATABASE_URL"] ?? "fiendBets.db";
+const db = new Database(DATABASE_URL);
 
 // Create migrations table to track which migrations have been run
 db.exec(`
