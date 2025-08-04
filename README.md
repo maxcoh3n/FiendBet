@@ -5,10 +5,8 @@ This bot keeps track of bets for friends (fiends)
 ## Setup
 
 - Download the repo
-- Create an .env file locally with this format:
-  TOKEN = <the token>
-  ClIENT_ID = <the client id>
-- navigate to the repo and execute `npx ts-node src/index.ts` in your terminal
+- `cp .env.example .env` and fill in accordingly.
+- `yarn dev` to test FiendBet
 
 Ex usage:
 /createbet moneyline description: Shai cries line: +200
