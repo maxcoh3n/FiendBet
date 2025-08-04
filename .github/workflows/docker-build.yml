@@ -7,8 +7,6 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}
-
 jobs:
   build:
     name: Build Docker Images
@@ -26,6 +24,13 @@ jobs:
             platform: linux/arm64
     
     steps:
+      - name: Get short SHA
+        id: sha
+        run: echo "short=${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
+      - name: Get GHCR repository
+        id: repo
+        run: |
+          echo "image=${GITHUB_REPOSITORY@L}" >> $GITHUB_OUTPUT
       - name: Checkout code
         uses: actions/checkout@v4
       
@@ -43,12 +48,8 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-      
-      - name: Get short SHA
-        id: sha
-        run: echo "short=${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
-      
+          images: ${{ env.REGISTRY }}/${{ steps.repo.outputs.image }}
+
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
@@ -56,8 +57,8 @@ jobs:
           platforms: ${{ matrix.platform }}
           push: true
           tags: |
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ matrix.arch }}-${{ steps.sha.outputs.short }}
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ matrix.arch }}-latest
+            ${{ env.REGISTRY }}/${{ steps.repo.outputs.image }}:${{ matrix.arch }}-${{ steps.sha.outputs.short }}
+            ${{ env.REGISTRY }}/${{ steps.repo.outputs.image }}:${{ matrix.arch }}-latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -70,6 +71,14 @@ jobs:
       packages: write
     
     steps:
+      - name: Get short SHA
+        id: sha
+        run: echo "short=${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
+      - name: Get GHCR repository
+        id: repo
+        run: |
+          echo "image=${GITHUB_REPOSITORY@L}" >> $GITHUB_OUTPUT
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
       
@@ -79,21 +88,17 @@ jobs:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      
-      - name: Get short SHA
-        id: sha
-        run: echo "short=${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
-      
+       
       - name: Create and push manifest for latest
         run: |
-          docker manifest create ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest \
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:amd64-latest \
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:arm64-latest
-          docker manifest push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+          docker manifest create ${{ env.REGISTRY }}/${{ steps.repo.outputs.image }}:latest \
+            ${{ env.REGISTRY }}/${{ steps.repo.outputs.image }}:amd64-latest \
+            ${{ env.REGISTRY }}/${{ steps.repo.outputs.image }}:arm64-latest
+          docker manifest push ${{ env.REGISTRY }}/${{ steps.repo.outputs.image }}:latest
       
       - name: Create and push manifest for SHA
         run: |
-          docker manifest create ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.sha.outputs.short }} \
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:amd64-${{ steps.sha.outputs.short }} \
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:arm64-${{ steps.sha.outputs.short }}
-          docker manifest push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.sha.outputs.short }}
+          docker manifest create ${{ env.REGISTRY }}/${{ steps.repo.outputs.image }}:${{ steps.sha.outputs.short }} \
+            ${{ env.REGISTRY }}/${{ steps.repo.outputs.image }}:amd64-${{ steps.sha.outputs.short }} \
+            ${{ env.REGISTRY }}/${{ steps.repo.outputs.image }}:arm64-${{ steps.sha.outputs.short }}
+          docker manifest push ${{ env.REGISTRY }}/${{ steps.repo.outputs.image }}:${{ steps.sha.outputs.short }}
