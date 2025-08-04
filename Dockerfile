@@ -24,9 +24,6 @@ WORKDIR /app
 # Install dumb-init for proper signal handling
 RUN apk add --no-cache dumb-init
 
-# Create non-root user
-RUN addgroup -g 1000 -S nodejs && adduser -S nodejs -u 1000
-
 # Copy package files
 COPY package.json yarn.lock ./
 
@@ -41,7 +38,7 @@ COPY --from=builder /app/build ./build
 COPY db_migrations ./db_migrations
 
 # Switch to non-root user
-USER nodejs
+USER node
 
 # Use dumb-init to handle signals properly
 ENTRYPOINT ["dumb-init", "--"]
