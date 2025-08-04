@@ -29,13 +29,17 @@ COPY package.json yarn.lock ./
 
 # Install only production dependencies
 RUN yarn install --frozen-lockfile --production && \
-    yarn cache clean
+  yarn cache clean
 
 # Copy built application from builder stage
 COPY --from=builder /app/build ./build
 
 # Copy database migrations
 COPY db_migrations ./db_migrations
+
+RUN mkdir /db \
+  && chown -R node:node /db \
+  && chown -R node:node /app
 
 # Switch to non-root user
 USER node
