@@ -5,7 +5,7 @@ import {
   User,
 } from "discord.js";
 import { semanticNo, semanticYes } from "./constants";
-import { Bet, BetTypes, FiendWager, Replyable } from "./types";
+import { Bet, BetTypes, FiendWager, Replyable, SpreadTypes } from "./types";
 
 export function betToString(bet: Bet): string {
   return `${bet.description}\n${
@@ -31,6 +31,7 @@ export function fiendWagerToString(fiendWager: FiendWager): string {
 
 export function getPayout(
   wagerAmount: number,
+  choice: boolean | SpreadTypes,
   isBetWon: boolean,
   type: BetTypes,
   moneyLine: number = 0,
@@ -39,9 +40,16 @@ export function getPayout(
     return -wagerAmount;
   }
   if (type === BetTypes.MONEYLINE) {
-    return (
-      wagerAmount * (moneyLine > 0 ? moneyLine / 100 : 100 / (-1 * moneyLine))
-    );
+    if (choice == true) {
+      return (
+        wagerAmount * (moneyLine > 0 ? moneyLine / 100 : 100 / (-1 * moneyLine))
+      );
+    }
+    if (choice == false) {
+      return (
+        wagerAmount * (moneyLine < 0 ? (-1 * moneyLine) / 100 : 100 / moneyLine)
+      );
+    }
   } else if (type === BetTypes.SPREAD) {
     return wagerAmount;
   }

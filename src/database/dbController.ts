@@ -1,43 +1,43 @@
+import { STARTING_BALANCE } from "../common/constants";
 import {
-  BetTypes,
-  SpreadTypes,
-  Fiend,
   Bet,
-  Wager,
+  BetTypes,
+  Fiend,
   FiendWager,
+  SpreadTypes,
+  Wager,
 } from "../common/types";
 import { getPayout } from "../common/util";
-import { STARTING_BALANCE } from "../common/constants";
 import db from "./db";
-import { FiendRow, BetRow, WagerRow, FiendWagerRow } from "./models";
 import {
-  getFiendStmt,
-  getAllFiendsStmt,
-  insertFiendStmt,
-  insertAwardStmt,
-  updateFiendBalanceStmt,
-  updateFiendCreditStmt,
-  insertBetStmt,
-  getBetStmt,
-  getUnsettledBetsStmt,
+  dbRowToBet,
+  dbRowToFiend,
+  dbRowToFiendWager,
+  dbRowToWager,
+  deserializeChoice,
+  serializeChoice,
+  serializeResult,
+} from "./dbHelpers";
+import {
   closeBetStmt,
-  voidBetStmt,
-  settleBetStmt,
-  insertWagerStmt,
+  getAllFiendsStmt,
+  getBetStmt,
+  getFiendStmt,
+  getFiendWagersByBetStmt,
+  getUnsettledBetsStmt,
   getWagersByBetAllStmt,
   getWagersByBetStmt,
+  insertAwardStmt,
+  insertBetStmt,
+  insertFiendStmt,
+  insertWagerStmt,
+  settleBetStmt,
   settleWagerStmt,
-  getFiendWagersByBetStmt,
+  updateFiendBalanceStmt,
+  updateFiendCreditStmt,
+  voidBetStmt,
 } from "./dbStatements";
-import {
-  serializeChoice,
-  deserializeChoice,
-  serializeResult,
-  dbRowToFiend,
-  dbRowToBet,
-  dbRowToWager,
-  dbRowToFiendWager,
-} from "./dbHelpers";
+import { BetRow, FiendRow, FiendWagerRow, WagerRow } from "./models";
 
 export function addFiendBucks(userId: string, amount: number): Fiend {
   const existingFiend = getFiendStmt.get(userId) as FiendRow | undefined;
@@ -183,6 +183,7 @@ export function settleBet(
       const isBetWon = deserializeChoice(wager.choice) === result;
       const payout = getPayout(
         wager.amount,
+        deserializeChoice(wager.choice),
         isBetWon,
         bet.type as BetTypes,
         bet.moneyLine,
