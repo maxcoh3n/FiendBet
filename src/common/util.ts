@@ -11,9 +11,10 @@ export function betToString(bet: Bet): string {
   return `${bet.description}\n${
     bet.type == BetTypes.MONEYLINE
       ? "**Moneyline:** " +
-        (bet.moneyLine && bet.moneyLine > 0
-          ? "+" + bet.moneyLine
-          : bet.moneyLine)
+        moneyLineToString(bet.moneyLine) +
+        " Yes/ " +
+        moneyLineToStringNo(bet.moneyLine) +
+        " No"
       : ""
   }${
     bet.type == BetTypes.SPREAD
@@ -21,6 +22,15 @@ export function betToString(bet: Bet): string {
         (bet.spread && bet.spread > 0 ? "+" + bet.spread : bet.spread)
       : ""
   } ${bet.isOpen ? "" : "Closed" + "|"} | **ID:** ${bet.id} `;
+}
+
+function moneyLineToString(moneyLine: number | undefined): string {
+  return moneyLine && moneyLine > 0 ? "+" + moneyLine : "" + moneyLine;
+}
+
+function moneyLineToStringNo(moneyLine: number | undefined): string {
+  moneyLine = moneyLine ? -1 * moneyLine : 0;
+  return moneyLine > 0 ? "+" + Math.abs(moneyLine) : "" + moneyLine;
 }
 
 export function fiendWagerToString(fiendWager: FiendWager): string {
