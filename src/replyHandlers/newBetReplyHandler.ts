@@ -50,19 +50,21 @@ export default async function handleNewBetReply(
     return;
   }
 
-  if (message.content.includes("wager")) {
+  const messageContentLower = message.content.toLowerCase();
+
+  if (messageContentLower.includes("wager")) {
     await wagerReplyHandler(message, repliedMessage, fiend, bet);
     return;
   }
-  if (message.content.includes("close")) {
+  if (messageContentLower.includes("close")) {
     await closeBetReplyHandler(message, repliedMessage, bet);
     return;
   }
-  if (message.content.includes("settle")) {
+  if (messageContentLower.includes("settle")) {
     await settleBetReplyHandler(message, repliedMessage, bet);
     return;
   }
-  if (message.content.includes("void")) {
+  if (messageContentLower.includes("void")) {
     await voidBetReplyHandler(message, repliedMessage, bet);
     return;
   }

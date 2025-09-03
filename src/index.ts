@@ -4,13 +4,13 @@ dotenv.config();
 
 import { Client, GatewayIntentBits, REST, Routes } from "discord.js";
 import { commands } from "./commands";
-import HandleLeaderboard from "./slashCommandHandlers/leaderboardHandler";
-import HandleBalance from "./slashCommandHandlers/balanceHandler";
-import HandleCreateBet from "./slashCommandHandlers/createbetHandler";
-import HandleBets from "./slashCommandHandlers/betsHandler";
 import handleMessageReply from "./replyHandlers/messageReplyHandler";
-import HandleHelp from "./slashCommandHandlers/helpHandler";
 import HandleAward from "./slashCommandHandlers/awardHandler";
+import HandleBalance from "./slashCommandHandlers/balanceHandler";
+import HandleBets from "./slashCommandHandlers/betsHandler";
+import HandleCreateBet from "./slashCommandHandlers/createbetHandler";
+import HandleHelp from "./slashCommandHandlers/helpHandler";
+import HandleLeaderboard from "./slashCommandHandlers/leaderboardHandler";
 import HandleSettle from "./slashCommandHandlers/settleHandler";
 
 // Create a new client instance
@@ -123,7 +123,7 @@ client.on("messageCreate", async (message) => {
         message.reference.messageId,
       );
 
-      // Check if the original message was from our bot
+      // Only pay attention if the original message was from our bot
       if (repliedMessage.author.id === client.user?.id) {
         await handleMessageReply(message, repliedMessage);
       }
