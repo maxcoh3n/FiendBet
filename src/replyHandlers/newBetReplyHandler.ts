@@ -1,20 +1,16 @@
 import { Message } from "discord.js";
-import { STARTING_BALANCE } from "../common/constants";
 import { Bet, BetTypes, Fiend, SpreadTypes } from "../common/types";
 import {
   doesStringContainNo,
   doesStringContainYes,
   getBetId,
   getNumberFromMessage,
-  getServerNicknameWithMessage,
   pingFiend,
 } from "../common/util";
 import {
   closeBet,
-  createFiend,
   createWager,
   getBet,
-  getFiend,
   settleBet,
   voidBet,
 } from "../database/dbController";
@@ -22,19 +18,8 @@ import {
 export default async function handleNewBetReply(
   message: Message,
   repliedMessage: Message,
+  fiend: Fiend,
 ) {
-  let fiend = getFiend(message.author.id);
-
-  if (!fiend) {
-    fiend = createFiend(
-      message.author.id,
-      await getServerNicknameWithMessage(message.author, message),
-    );
-    await message.reply(
-      `New Fiend Created for ${fiend.name} with ${STARTING_BALANCE} FiendBucks!`,
-    );
-  }
-
   const betId = getBetId(repliedMessage.content);
 
   if (!betId) {
@@ -171,9 +156,7 @@ async function closeBetReplyHandler(
   bet.isOpen = false;
   closeBet(bet.id);
 
-  await message.reply(
-    `Bet ID ${bet.id} has been closed. New bets can no longer be placed.`,
-  );
+  await message.react("🔒");
 }
 
 async function settleBetReplyHandler(

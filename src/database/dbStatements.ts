@@ -24,6 +24,8 @@ export const insertBetStmt = db.prepare(
 export const closeBetStmt = db.prepare(
   "UPDATE bets SET isOpen = 0, updatedAt = CURRENT_TIMESTAMP WHERE id = ?",
 );
+export const closeAllBetsStmt = db.prepare("UPDATE bets SET isOpen = 0");
+
 export const settleBetStmt = db.prepare(
   "UPDATE bets SET isSettled = 1, result = ?, isOpen = 0, updatedAt = CURRENT_TIMESTAMP WHERE id = ?",
 );

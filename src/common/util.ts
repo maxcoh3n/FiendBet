@@ -8,20 +8,23 @@ import { semanticNo, semanticYes } from "./constants";
 import { Bet, BetTypes, FiendWager, Replyable, SpreadTypes } from "./types";
 
 export function betToString(bet: Bet): string {
-  return `${bet.description}\n${
-    bet.type == BetTypes.MONEYLINE
-      ? "**Moneyline:** " +
-        moneyLineToString(bet.moneyLine) +
-        " Yes/ " +
-        moneyLineToStringNo(bet.moneyLine) +
-        " No"
-      : ""
-  }${
-    bet.type == BetTypes.SPREAD
-      ? "**Spread:** " +
-        (bet.spread && bet.spread > 0 ? "+" + bet.spread : bet.spread)
-      : ""
-  } ${bet.isOpen ? "" : "Closed" + "|"} | **ID:** ${bet.id} `;
+  return (
+    `**ID:** ${bet.id})\n` +
+    `${bet.description}\n${
+      bet.type == BetTypes.MONEYLINE
+        ? "**Moneyline:** " +
+          moneyLineToString(bet.moneyLine) +
+          " Yes/ " +
+          moneyLineToStringNo(bet.moneyLine) +
+          " No"
+        : ""
+    }${
+      bet.type == BetTypes.SPREAD
+        ? "**Spread:** " +
+          (bet.spread && bet.spread > 0 ? "+" + bet.spread : bet.spread)
+        : ""
+    } ${bet.isOpen ? "" : "| Closed 🔒"}`
+  );
 }
 
 function moneyLineToString(moneyLine: number | undefined): string {

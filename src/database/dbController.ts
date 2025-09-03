@@ -19,6 +19,7 @@ import {
   serializeResult,
 } from "./dbHelpers";
 import {
+  closeAllBetsStmt,
   closeBetStmt,
   getAllFiendsStmt,
   getBetStmt,
@@ -113,6 +114,14 @@ export function getUnsettledBets(): Bet[] {
  */
 export function closeBet(id: number): void {
   closeBetStmt.run(id);
+}
+
+/*
+ * Closes a bet to new wagers by setting its isOpen property to false.
+ * This does not settle the bet; it just marks it as closed.
+ */
+export function closeAllBets(): void {
+  closeAllBetsStmt.run();
 }
 
 export function voidBet(id: number): void {
