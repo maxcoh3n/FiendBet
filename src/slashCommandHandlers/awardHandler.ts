@@ -36,7 +36,7 @@ export default async function HandleAward(
   }
 
   const updatedFiend = awardFiend(fiend.id, amount, awardReason || "");
-  const awardMessage = `${fiend.name} was awarded with ${amount} FiendBucks ${awardReason ? "beacause " + awardReason : ""}. They now have ${updatedFiend.balance} FiendBucks!`;
+  const awardMessage = `${fiend.name} was awarded with ${amount} FiendBucks ${awardReason ? "because " + awardReason : ""}. They now have ${updatedFiend.balance} FiendBucks!`;
 
   if (isNewFiend) {
     await interaction.followUp(awardMessage);
