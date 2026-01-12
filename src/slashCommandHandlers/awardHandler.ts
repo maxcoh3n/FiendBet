@@ -26,16 +26,21 @@ export default async function HandleAward(
 
   const awardReason = interaction.options.getString("reason", false);
 
+  let isNewFiend = false;
   if (!fiend) {
     fiend = createFiend(user.id, await getServerNickname(user, interaction));
+    isNewFiend = true;
     await interaction.reply(
       `New Fiend Created for ${fiend.name} with ${STARTING_BALANCE} FiendBucks!`,
     );
   }
 
   const updatedFiend = awardFiend(fiend.id, amount, awardReason || "");
+  const awardMessage = `${fiend.name} was awarded with ${amount} FiendBucks ${awardReason ? "beacause " + awardReason : ""}. They now have ${updatedFiend.balance} FiendBucks!`;
 
-  await interaction.followUp(
-    `${fiend.name} was awarded with ${amount} FiendBucks ${awardReason ? "beacause " + awardReason : ""}. They now have ${updatedFiend.balance} FiendBucks!`,
-  );
+  if (isNewFiend) {
+    await interaction.followUp(awardMessage);
+  } else {
+    await interaction.reply(awardMessage);
+  }
 }
