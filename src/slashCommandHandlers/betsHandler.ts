@@ -26,5 +26,12 @@ export default async function HandleBets(
 
 function formatFiendWagers(betId: number): string {
   const wagers = getFiendWagersByBet(betId);
-  return wagers.map((wager) => "    " + fiendWagerToString(wager)).join("\n");
+
+  if (wagers.length === 0) {
+    return "";
+  }
+
+  return (
+    wagers.map((wager) => "    " + fiendWagerToString(wager)).join("\n") + "\n"
+  );
 }
