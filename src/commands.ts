@@ -64,10 +64,14 @@ export const commands = [
         .setName("moneyline")
         .setDescription("Create a bet that can resolve to true or false")
         .addStringOption((option) =>
+          option.setName("description").setDescription("Describes the bet"),
+        )
+        .addStringOption((option) =>
           option
-            .setName("description")
-            .setDescription("What is the bet")
-            .setRequired(true),
+            .setName("secret_description")
+            .setDescription(
+              "Describes the bet but will only be revealed upon settlement",
+            ),
         )
         .addIntegerOption((option) =>
           option
@@ -83,17 +87,21 @@ export const commands = [
         .setDescription(
           "Create a bet that can resolve to some number over or under a spread",
         )
-        .addStringOption((option) =>
-          option
-            .setName("description")
-            .setDescription("What is the bet")
-            .setRequired(true),
-        )
         .addNumberOption((option) =>
           option
             .setName("spread")
             .setDescription("The spread, i.e. over/under (e.g., 5.5)")
             .setRequired(true),
+        )
+        .addStringOption((option) =>
+          option.setName("description").setDescription("What is the bet"),
+        )
+        .addStringOption((option) =>
+          option
+            .setName("secret_description")
+            .setDescription(
+              "Describes the bet but will only be revealed upon settlement",
+            ),
         ),
     ),
 ].map((command) => command.toJSON());

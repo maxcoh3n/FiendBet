@@ -82,6 +82,7 @@ export function createFiend(userId: string, name: string): Fiend {
 
 export function createBet(
   description: string,
+  secretDescription: string | null,
   type: BetTypes,
   moneyLine: number | undefined = undefined,
   spread: number | undefined = undefined,
@@ -94,7 +95,15 @@ export function createBet(
     throw new Error("Spread value must be provided for spread bets");
   }
 
-  const result = insertBetStmt.run(description, type, moneyLine, spread, 1, 0);
+  const result = insertBetStmt.run(
+    description,
+    secretDescription,
+    type,
+    moneyLine,
+    spread,
+    1,
+    0,
+  );
   return dbRowToBet(getBetStmt.get(result.lastInsertRowid) as BetRow);
 }
 

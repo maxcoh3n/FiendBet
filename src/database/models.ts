@@ -16,6 +16,7 @@ export interface BetRow {
   spread: number | null;
   isOpen: number;
   isSettled: number;
+  secretDescription: string | null;
   result: string | null;
   date: string | null;
   createdAt: string;

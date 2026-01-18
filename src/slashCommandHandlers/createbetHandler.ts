@@ -1,9 +1,8 @@
 import { ChatInputCommandInteraction } from "discord.js";
-import { createBet } from "../database/dbController";
+import { NewBetMessage, SecretBetMessage } from "../common/constants";
 import { BetTypes } from "../common/types";
 import { betToString, sendMessageEphemeral } from "../common/util";
-import { NewBetMessage } from "../common/constants";
-import { send } from "process";
+import { createBet } from "../database/dbController";
 
 export default async function HandleCreateBet(
   interaction: ChatInputCommandInteraction,
@@ -27,14 +26,19 @@ export default async function HandleCreateBet(
 }
 
 async function handleMoneylineBet(interaction: ChatInputCommandInteraction) {
-  const description = interaction.options.getString("description", true);
+  let description = interaction.options.getString("description", false);
+  const secretDescription = interaction.options.getString(
+    "secret_description",
+    false,
+  );
+
   let line = interaction.options.getInteger("line");
 
   // Validate input
-  if (!description || line === undefined) {
+  if (!description && !secretDescription) {
     await sendMessageEphemeral(
       interaction,
-      "Please provide a valid description and moneyline.",
+      "Please provide a valid description or secret description.",
     );
     return;
   }
@@ -43,8 +47,17 @@ async function handleMoneylineBet(interaction: ChatInputCommandInteraction) {
     line = 100;
   }
 
+  if (!description) {
+    description = SecretBetMessage;
+  }
+
   // Create the bet in the database
-  const bet = await createBet(description, BetTypes.MONEYLINE, line);
+  const bet = await createBet(
+    description,
+    secretDescription,
+    BetTypes.MONEYLINE,
+    line,
+  );
 
   if (bet) {
     await interaction.reply(
@@ -59,21 +72,30 @@ async function handleMoneylineBet(interaction: ChatInputCommandInteraction) {
 }
 
 async function handleSpreadBet(interaction: ChatInputCommandInteraction) {
-  const description = interaction.options.getString("description", true);
+  let description = interaction.options.getString("description", false);
+  const secretDescription = interaction.options.getString(
+    "secret_description",
+    false,
+  );
   let spread = interaction.options.getNumber("spread", true);
 
   // Validate input
-  if (!description || spread === undefined) {
+  if ((!description && !secretDescription) || spread === undefined) {
     await sendMessageEphemeral(
       interaction,
-      "Please provide a valid description and spread.",
+      "Please provide a valid description or secret description, and spread.",
     );
     return;
+  }
+
+  if (!description) {
+    description = SecretBetMessage;
   }
 
   // Create the bet in the database
   const bet = await createBet(
     description,
+    secretDescription,
     BetTypes.SPREAD,
     undefined, // this sucks, why isn't this cool like python
     spread,

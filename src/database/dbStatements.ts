@@ -19,7 +19,7 @@ export const getUnsettledBetsStmt = db.prepare(
   "SELECT * FROM bets WHERE isSettled = 0",
 );
 export const insertBetStmt = db.prepare(
-  "INSERT INTO bets (description, type, moneyLine, spread, isOpen, isSettled) VALUES (?, ?, ?, ?, ?, ?)",
+  "INSERT INTO bets (description, secretDescription, type, moneyLine, spread, isOpen, isSettled) VALUES (?, ?, ?, ?, ?, ?, ?)",
 );
 export const closeBetStmt = db.prepare(
   "UPDATE bets SET isOpen = 0, updatedAt = CURRENT_TIMESTAMP WHERE id = ?",

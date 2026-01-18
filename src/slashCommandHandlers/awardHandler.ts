@@ -1,7 +1,7 @@
 import { ChatInputCommandInteraction } from "discord.js";
-import { getFiend, createFiend, awardFiend } from "../database/dbController";
 import { STARTING_BALANCE } from "../common/constants";
 import { getServerNickname } from "../common/util";
+import { awardFiend, createFiend, getFiend } from "../database/dbController";
 
 export default async function HandleAward(
   interaction: ChatInputCommandInteraction,

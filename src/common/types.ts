@@ -26,6 +26,7 @@ export interface Bet {
   spread?: number; // For spread bets
   isOpen: boolean;
   isSettled: boolean;
+  secretDescription?: string;
   result?: boolean | SpreadTypes; // Result can be true/false for moneyline or a number for spread
   date?: Date; // Date when the bet will likely be resolved so we can ping as a reminder
 }

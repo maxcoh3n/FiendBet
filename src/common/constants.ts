@@ -1,5 +1,6 @@
 export const NewBetMessage = "New bet created!";
 export const UnsettledBetsMsg = "Unsettled Bets";
+export const SecretBetMessage = "Secret bet";
 export const semanticYes = ["yes", "y", "yea", "yeah", "yep", "true"];
 export const semanticNo = ["no", "n", "nah", "nope", "false"];
 export const STARTING_BALANCE = 100;

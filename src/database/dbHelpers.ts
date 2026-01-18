@@ -1,12 +1,12 @@
 import {
-  SpreadTypes,
-  Fiend,
-  Wager,
-  BetTypes,
   Bet,
+  BetTypes,
+  Fiend,
   FiendWager,
+  SpreadTypes,
+  Wager,
 } from "../common/types";
-import { FiendRow, WagerRow, BetRow, FiendWagerRow } from "./models";
+import { BetRow, FiendRow, FiendWagerRow, WagerRow } from "./models";
 
 // Helper functions for type conversion
 export function serializeChoice(choice: boolean | SpreadTypes): string {
@@ -56,6 +56,7 @@ export function dbRowToBet(row: BetRow): Bet {
     spread: row.spread || undefined,
     isOpen: Boolean(row.isOpen),
     isSettled: Boolean(row.isSettled),
+    secretDescription: row.secretDescription || undefined,
     result: deserializeResult(row.result),
     date: row.date ? new Date(row.date) : undefined,
   };

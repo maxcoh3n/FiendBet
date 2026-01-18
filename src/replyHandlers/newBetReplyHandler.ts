@@ -1,4 +1,5 @@
 import { Message } from "discord.js";
+import { SecretBetMessage } from "../common/constants";
 import { Bet, BetTypes, Fiend, SpreadTypes } from "../common/types";
 import {
   doesStringContainNo,
@@ -231,8 +232,13 @@ async function settleBetReplyHandler(
     )
     .join("\n");
 
+  const displayDescription =
+    bet.description === SecretBetMessage
+      ? bet.secretDescription
+      : bet.description;
+
   await message.reply(
-    `Bet ID ${bet.id} has been settled with result: ${betResult}.\nResults:\n${resultsMessage}`,
+    `Bet ID ${bet.id}: ${displayDescription} has been settled with result: ${betResult}.\nResults:\n${resultsMessage}`,
   );
 }
 
