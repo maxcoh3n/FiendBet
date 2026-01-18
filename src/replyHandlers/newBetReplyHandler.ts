@@ -238,7 +238,9 @@ async function settleBetReplyHandler(
   const displayDescription =
     bet.description === SecretBetMessage
       ? bet.secretDescription
-      : bet.description;
+      : bet.description && bet.secretDescription
+        ? `${bet.description} - ${bet.secretDescription}`
+        : bet.description;
 
   await message.reply(
     `Bet ID ${bet.id}: ${displayDescription} has been settled with result: ${betResult}.\nResults:\n${resultsMessage}`,
