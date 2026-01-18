@@ -42,7 +42,10 @@ export default async function handleNewBetReply(
     await wagerReplyHandler(message, repliedMessage, fiend, bet);
     return;
   }
-  if (messageContentLower.includes("close")) {
+  if (
+    messageContentLower.includes("close") ||
+    messageContentLower.includes("lock")
+  ) {
     await closeBetReplyHandler(message, repliedMessage, bet);
     return;
   }

@@ -9,7 +9,10 @@ export default async function handleAllBetsReply(
 ) {
   const messageContentLower = message.content.toLowerCase();
 
-  if (messageContentLower.includes("close")) {
+  if (
+    messageContentLower.includes("close") ||
+    messageContentLower.includes("lock")
+  ) {
     await closeBetsReplyHandler(message);
     return;
   }
