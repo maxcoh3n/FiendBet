@@ -8,6 +8,12 @@ This bot keeps track of bets for friends (fiends)
 - `cp .env.example .env` and fill in accordingly.
 - `yarn dev` to test FiendBet
 
+## DB interaction
+
+- sqlite3 fiendbets.db
+- .tables
+- .schema <table_name>
+
 ## Usage
 
 ```
