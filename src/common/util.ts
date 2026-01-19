@@ -52,21 +52,19 @@ export function getPayout(
   if (!isBetWon) {
     return -wagerAmount;
   }
+  let payout = 0;
   if (type === BetTypes.MONEYLINE) {
     if (choice == true) {
-      return (
-        wagerAmount * (moneyLine > 0 ? moneyLine / 100 : 100 / (-1 * moneyLine))
-      );
+      payout = wagerAmount * (moneyLine > 0 ? moneyLine / 100 : 100 / (-1 * moneyLine));
     }
     if (choice == false) {
-      return (
-        wagerAmount * (moneyLine < 0 ? (-1 * moneyLine) / 100 : 100 / moneyLine)
-      );
+      payout = wagerAmount * (moneyLine < 0 ? (-1 * moneyLine) / 100 : 100 / moneyLine);
     }
   } else if (type === BetTypes.SPREAD) {
-    return wagerAmount;
+    payout = wagerAmount;
   }
-  return 0; // Default case, no payout
+  // Round to 2 decimal places
+  return Math.round(payout * 100) / 100;
 }
 
 export function getBetId(messageContent: string): number | false {
