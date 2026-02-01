@@ -1,10 +1,10 @@
-import { BetTypes, Bet, SpreadTypes, Replyable } from "../common/types";
+import { Bet, BetTypes, Replyable, SpreadTypes } from "../common/types";
 import {
-  sendMessageEphemeral,
-  getNumberFromMessage,
   doesStringContainNo,
   doesStringContainYes,
+  getNumberFromMessage,
   pingFiend,
+  sendMessageEphemeral,
 } from "../common/util";
 import { settleBet } from "../database/dbController";
 

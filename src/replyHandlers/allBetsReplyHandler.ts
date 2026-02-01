@@ -1,6 +1,7 @@
 import { Message } from "discord.js";
+import { AllBetsHelpMessage } from "../common/constants";
 import { Fiend } from "../common/types";
-import { getNumberFromMessage } from "../common/util";
+import { getNumberFromMessage, sendMessageEphemeral } from "../common/util";
 import { closeAllBets, getBet } from "../database/dbController";
 import { settleBetReplyHandler } from "./settleBetReplyHandler";
 import { voidBetReplyHandler } from "./voidBetReplyHandler";
@@ -64,6 +65,11 @@ export default async function handleAllBetsReply(
       }
     }
     await message.reply("Please provide a valid bet ID to void.");
+    return;
+  }
+
+  if (command === "help") {
+    await sendMessageEphemeral(message, AllBetsHelpMessage);
     return;
   }
 }

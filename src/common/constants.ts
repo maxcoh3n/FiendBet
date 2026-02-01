@@ -4,6 +4,13 @@ export const SecretBetMessage = "Secret bet";
 export const semanticYes = ["yes", "y", "yea", "yeah", "yep", "true"];
 export const semanticNo = ["no", "n", "nah", "nope", "false"];
 export const STARTING_BALANCE = 100;
+export const AllBetsHelpMessage = `Reply to the all bets message (not this one) in the following format:
+Action BetID Choices/Amount ex:
+To wager 5 FiendBucks on bet 1, reply
+\`wager 1 yes 5\`
+To settle bet 2, reply
+\`settle 2 over\``;
+export const AllBetsFooterMessage = `\nReply to this message with "help" to learn how to interact with these bets individually.`;
 export const helpMessage = `To create a bet, use the /createbet command.
  Bets can either be moneyline or spread.
  A moneyline bet by default has a 50% chance of being yes or no, represented as +100 odds. 
