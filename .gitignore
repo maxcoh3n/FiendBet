@@ -5,3 +5,4 @@ package-lock.json
 fiendBets.db
 *.DS_Store
 build
+fiendbets_pglite/*
