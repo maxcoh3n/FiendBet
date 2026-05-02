@@ -24,7 +24,9 @@ import {
   getAllFiendsStmt,
   getBetStmt,
   getFiendStmt,
+  getFiendWagersByBetAndUserStmt,
   getFiendWagersByBetStmt,
+  getUnsettledBetsByUserStmt,
   getUnsettledBetsStmt,
   getWagersByBetAllStmt,
   getWagersByBetStmt,
@@ -114,6 +116,11 @@ export function getBet(id: number): Bet | null {
 
 export function getUnsettledBets(): Bet[] {
   const rows = getUnsettledBetsStmt.all() as BetRow[];
+  return rows.map(dbRowToBet);
+}
+
+export function getUnsettledBetsByUser(userId: string): Bet[] {
+  const rows = getUnsettledBetsByUserStmt.all(userId) as BetRow[];
   return rows.map(dbRowToBet);
 }
 
@@ -298,6 +305,11 @@ export function createWager(
 
 export function getFiendWagersByBet(betId: number): FiendWager[] {
   const rows = getFiendWagersByBetStmt.all(betId) as FiendWagerRow[];
+  return rows.map(dbRowToFiendWager);
+}
+
+export function getFiendWagersByBetAndUser(betId: number, userId: string): FiendWager[] {
+  const rows = getFiendWagersByBetAndUserStmt.all(betId, userId) as FiendWagerRow[];
   return rows.map(dbRowToFiendWager);
 }
 

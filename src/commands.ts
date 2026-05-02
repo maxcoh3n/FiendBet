@@ -10,7 +10,13 @@ export const commands = [
     .setDescription("view all users FiendBucks balances"),
   new SlashCommandBuilder()
     .setName("bets")
-    .setDescription("view all unsettled bets"),
+    .setDescription("view all unsettled bets")
+    .addUserOption((option) =>
+      option
+        .setName("user")
+        .setDescription("The user to view bets for (optional)")
+        .setRequired(false),
+    ),
   new SlashCommandBuilder()
     .setName("balance")
     .setDescription("view user's balance")
