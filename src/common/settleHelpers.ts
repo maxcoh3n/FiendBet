@@ -9,6 +9,10 @@ import {
 
 export type SettleResult = boolean | SpreadTypes;
 
+export function roundto2decimal(value: number): number {
+  return Math.round(value * 100) / 100;
+}
+
 export function getDisplayDescription(bet: Bet): string | undefined {
   if (bet.description === SecretBetMessage) {
     return bet.secretDescription;
@@ -70,9 +74,9 @@ export function buildSettleResultsMessage(
   const resultsMessage = results
     .map(
       ([fiend, profit]) =>
-        `${pingFiend(fiend.id)} ${profit > 0 ? "gained" : "lost"} ${Math.abs(
-          profit,
-        )} FiendBucks From this wager, and now has ${fiend.balance}`,
+        `${pingFiend(fiend.id)} ${profit > 0 ? "gained" : "lost"} ${roundto2decimal(
+          Math.abs(profit),
+        )} FiendBucks From this wager, and now has ${roundto2decimal(fiend.balance)}`,
     )
     .join("\n");
 

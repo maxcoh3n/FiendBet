@@ -1,4 +1,5 @@
 import { ChatInputCommandInteraction } from "discord.js";
+import { roundToTwoDecimals } from "../common/util";
 import { getAllFiends } from "../database/dbController";
 
 export default async function HandleLeaderboard(
@@ -17,7 +18,7 @@ export default async function HandleLeaderboard(
   const leaderboard = users
     .map(
       (user, index) =>
-        `${index + 1}. ${user.name} - ${user.balance} FiendBucks`, // todo don't ping users here
+        `${index + 1}. ${user.name} - ${roundToTwoDecimals(user.balance)} FiendBucks`, // todo don't ping users here
     )
     .join("\n");
 

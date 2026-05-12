@@ -1,6 +1,6 @@
 import { ChatInputCommandInteraction } from "discord.js";
 import { STARTING_BALANCE } from "../common/constants";
-import { getServerNickname } from "../common/util";
+import { getServerNickname, roundToTwoDecimals } from "../common/util";
 import { awardFiend, createFiend, getFiend } from "../database/dbController";
 
 export default async function HandleAward(
@@ -36,7 +36,7 @@ export default async function HandleAward(
   }
 
   const updatedFiend = awardFiend(fiend.id, amount, awardReason || "");
-  const awardMessage = `${fiend.name} was awarded with ${amount} FiendBucks ${awardReason ? "because " + awardReason : ""}. They now have ${updatedFiend.balance} FiendBucks!`;
+  const awardMessage = `${fiend.name} was awarded with ${amount} FiendBucks ${awardReason ? "because " + awardReason : ""}. They now have ${roundToTwoDecimals(updatedFiend.balance)} FiendBucks!`;
 
   if (isNewFiend) {
     await interaction.followUp(awardMessage);

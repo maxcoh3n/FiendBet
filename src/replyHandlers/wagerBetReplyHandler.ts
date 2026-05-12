@@ -4,6 +4,7 @@ import {
   doesStringContainNo,
   doesStringContainYes,
   getNumberFromMessage,
+  roundToTwoDecimals,
 } from "../common/util";
 import { createWager } from "../database/dbController";
 
@@ -25,7 +26,7 @@ export async function wagerBetReplyHandler(
 
   if (wagerValue > fiend.balance) {
     await message.reply(
-      `You don't have enough FiendBucks to place this wager. Your balance is ${fiend.balance} FiendBucks.`,
+      `You don't have enough FiendBucks to place this wager. Your balance is ${roundToTwoDecimals(fiend.balance)} FiendBucks.`,
     );
     return;
   }

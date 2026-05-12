@@ -71,6 +71,10 @@ export function getPayout(
   return Math.round(payout * 100) / 100;
 }
 
+export function roundToTwoDecimals(num: number): number {
+  return Math.round(num * 100) / 100;
+}
+
 export function getBetId(messageContent: string): number | false {
   const betIdMatch = messageContent.match(/\*\*ID:\*\*\s*(-?\d+(\.\d+)?)/);
   if (betIdMatch) {

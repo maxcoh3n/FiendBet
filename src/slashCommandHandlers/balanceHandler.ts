@@ -1,7 +1,7 @@
 import { ChatInputCommandInteraction } from "discord.js";
-import { getFiend, createFiend } from "../database/dbController";
 import { STARTING_BALANCE } from "../common/constants";
-import { getServerNickname } from "../common/util";
+import { getServerNickname, roundToTwoDecimals } from "../common/util";
+import { createFiend, getFiend } from "../database/dbController";
 
 export default async function HandleBalance(
   interaction: ChatInputCommandInteraction,
@@ -19,6 +19,6 @@ export default async function HandleBalance(
   }
 
   await interaction.reply(
-    `${fiend.name} has ${fiend.balance} FiendBucks, and ${fiend.credit || 0} on credit!`,
+    `${fiend.name} has ${roundToTwoDecimals(fiend.balance)} FiendBucks, and ${roundToTwoDecimals(fiend.credit || 0)} on credit!`,
   );
 }
