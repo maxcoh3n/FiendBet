@@ -28,6 +28,8 @@ import {
   getFiendWagersByBetStmt,
   getUnsettledBetsByUserStmt,
   getUnsettledBetsStmt,
+  getWagerByBetAndUserStmt,
+  getWagerByIdStmt,
   getWagersByBetAllStmt,
   getWagersByBetStmt,
   insertAwardStmt,
@@ -38,6 +40,7 @@ import {
   settleWagerStmt,
   updateFiendBalanceStmt,
   updateFiendCreditStmt,
+  updateWagerStmt,
   voidBetStmt,
 } from "./dbStatements";
 import { BetRow, FiendRow, FiendWagerRow, WagerRow } from "./models";
@@ -277,6 +280,22 @@ export function createWager(
 
   // Use transaction to ensure atomicity
   const transaction = db.transaction(() => {
+    const existingWager = getWagerByBetAndUserStmt.get(betId, userId) as
+      | WagerRow
+      | undefined;
+
+    if (existingWager) {
+      const creditDiff = amount - existingWager.amount;
+      updateWagerStmt.run(amount, serializeChoice(choice), existingWager.id);
+      updateFiendCreditStmt.run(creditDiff, userId);
+
+      existingWager.amount = amount;
+      existingWager.choice = serializeChoice(choice);
+      wager = dbRowToWager(existingWager);
+      updatedFiend = dbRowToFiend(getFiendStmt.get(userId) as FiendRow);
+      return;
+    }
+
     // Create the wager
     const wagerResult = insertWagerStmt.run(
       userId,
@@ -290,9 +309,9 @@ export function createWager(
     updateFiendCreditStmt.run(amount, userId);
 
     // Get the created wager and updated fiend
-    const wagerRow = db
-      .prepare("SELECT * FROM wagers WHERE id = ?")
-      .get(wagerResult.lastInsertRowid) as WagerRow;
+    const wagerRow = getWagerByIdStmt.get(
+      wagerResult.lastInsertRowid,
+    ) as WagerRow;
     const fiendRow = getFiendStmt.get(userId) as FiendRow;
 
     wager = dbRowToWager(wagerRow);
@@ -308,8 +327,14 @@ export function getFiendWagersByBet(betId: number): FiendWager[] {
   return rows.map(dbRowToFiendWager);
 }
 
-export function getFiendWagersByBetAndUser(betId: number, userId: string): FiendWager[] {
-  const rows = getFiendWagersByBetAndUserStmt.all(betId, userId) as FiendWagerRow[];
+export function getFiendWagersByBetAndUser(
+  betId: number,
+  userId: string,
+): FiendWager[] {
+  const rows = getFiendWagersByBetAndUserStmt.all(
+    betId,
+    userId,
+  ) as FiendWagerRow[];
   return rows.map(dbRowToFiendWager);
 }
 

@@ -37,6 +37,13 @@ export const voidBetStmt = db.prepare(
 export const insertWagerStmt = db.prepare(
   "INSERT INTO wagers (userId, betId, amount, choice, isSettled) VALUES (?, ?, ?, ?, ?)",
 );
+export const getWagerByIdStmt = db.prepare("SELECT * FROM wagers WHERE id = ?");
+export const getWagerByBetAndUserStmt = db.prepare(
+  "SELECT * FROM wagers WHERE betId = ? AND userId = ? AND isSettled = 0",
+);
+export const updateWagerStmt = db.prepare(
+  "UPDATE wagers SET amount = ?, choice = ?, updatedAt = CURRENT_TIMESTAMP WHERE id = ?",
+);
 export const getWagersByBetStmt = db.prepare(
   "SELECT * FROM wagers WHERE betId = ? AND isSettled = 0",
 );
