@@ -5,7 +5,15 @@ import {
   User,
 } from "discord.js";
 import { semanticNo, semanticYes } from "./constants";
-import { Bet, BetTypes, FiendWager, Replyable, SpreadTypes } from "./types";
+import {
+  Bet,
+  BetTypes,
+  Competition,
+  CompetitionEntry,
+  FiendWager,
+  Replyable,
+  SpreadTypes,
+} from "./types";
 
 export function betToString(bet: Bet): string {
   return (
@@ -40,6 +48,26 @@ export function fiendWagerToString(fiendWager: FiendWager): string {
   return `${fiendWager.name} wagered **${fiendWager.amount}** on ${
     fiendWager.choice
   } `;
+}
+
+export function competitionToString(competition: Competition): string {
+  const awardText =
+    competition.award !== null && competition.award !== undefined
+      ? ` | **Award:** ${competition.award}`
+      : "";
+
+  return (
+    `**ID:** ${competition.id})\n` +
+    `${competition.description}\n` +
+    `**Entry Fee:** ${competition.entryFee}${awardText}`
+  );
+}
+
+export function competitionEntryToString(
+  competitionEntry: CompetitionEntry,
+  entrantName: string,
+): string {
+  return `${entrantName} entered`;
 }
 
 export function getPayout(

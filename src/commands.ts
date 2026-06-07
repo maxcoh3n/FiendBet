@@ -132,6 +132,9 @@ export const commands = [
         .setRequired(false),
     ),
   new SlashCommandBuilder()
+    .setName("competitions")
+    .setDescription("View all unsettled competitions and current entrants"),
+  new SlashCommandBuilder()
     .setName("settlecompetition")
     .setDescription("Settle a competition and award FiendBucks to each entrant")
     .addIntegerOption((option) =>

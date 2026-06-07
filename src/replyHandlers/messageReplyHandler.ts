@@ -9,7 +9,7 @@ import { Fiend } from "../common/types";
 import { getServerNicknameWithMessage } from "../common/util";
 import { createFiend, getFiend } from "../database/dbController";
 import handleAllBetsReply from "./allBetsReplyHandler";
-import handleCompetitionEntryReply from "./competitionEntryReplyHandler";
+import handleCompetitionReply from "./competitionReplyHandler";
 import handleNewBetReply from "./newBetReplyHandler";
 
 export default async function handleMessageReply(
@@ -22,7 +22,7 @@ export default async function handleMessageReply(
     return handleNewBetReply(message, repliedMessage, fiend);
   }
   if (repliedMessage.content.includes(NewCompetitionMessage)) {
-    return handleCompetitionEntryReply(message, repliedMessage);
+    return handleCompetitionReply(message, repliedMessage);
   }
   if (repliedMessage.content.includes(UnsettledBetsMsg)) {
     return handleAllBetsReply(message, repliedMessage, fiend);

@@ -27,6 +27,7 @@ import {
   closeBetStmt,
   getAllFiendsStmt,
   getBetStmt,
+  getAllCompetitionsStmt,
   getCompetitionEntriesByCompetitionStmt,
   getCompetitionEntryStmt,
   getCompetitionStmt,
@@ -140,6 +141,15 @@ export function getBet(id: number): Bet | null {
 export function getCompetition(id: number): Competition | null {
   const row = getCompetitionStmt.get(id) as CompetitionRow | undefined;
   return row ? dbRowToCompetition(row) : null;
+}
+
+export function getAllCompetitions(): Competition[] {
+  const rows = getAllCompetitionsStmt.all() as CompetitionRow[];
+  return rows.map(dbRowToCompetition);
+}
+
+export function getUnsettledCompetitions(): Competition[] {
+  return getAllCompetitions().filter((competition) => !competition.isSettled);
 }
 
 export function getUnsettledBets(): Bet[] {

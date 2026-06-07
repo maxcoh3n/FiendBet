@@ -22,7 +22,7 @@ export default async function handleCompetitionReply(
 
   if (content.match(/\bsettle\b/)) {
     await message.reply(
-      "Please use the /settlecompetition command to settle the competition.",
+      'Please use the /settlecompetition command to settle the competition.',
     );
     return;
   }

@@ -8,6 +8,7 @@ import handleMessageReply from "./replyHandlers/messageReplyHandler";
 import HandleAward from "./slashCommandHandlers/awardHandler";
 import HandleBalance from "./slashCommandHandlers/balanceHandler";
 import HandleBets from "./slashCommandHandlers/betsHandler";
+import HandleCompetitions from "./slashCommandHandlers/competitionsHandler";
 import HandleCreateBet from "./slashCommandHandlers/createbetHandler";
 import HandleCreateCompetition from "./slashCommandHandlers/createcompetitionHandler";
 import HandleHelp from "./slashCommandHandlers/helpHandler";
@@ -88,6 +89,11 @@ client.on("interactionCreate", async (interaction) => {
 
       case "createcompetition": {
         await HandleCreateCompetition(interaction);
+        break;
+      }
+
+      case "competitions": {
+        await HandleCompetitions(interaction);
         break;
       }
 
