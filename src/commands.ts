@@ -110,4 +110,34 @@ export const commands = [
             ),
         ),
     ),
+  new SlashCommandBuilder()
+    .setName("createcompetition")
+    .setDescription("Create a new competition")
+    .addStringOption((option) =>
+      option
+        .setName("description")
+        .setDescription("Competition description")
+        .setRequired(true),
+    )
+    .addIntegerOption((option) =>
+      option
+        .setName("entry_fee")
+        .setDescription("Entry fee in FiendBucks")
+        .setRequired(true),
+    )
+    .addIntegerOption((option) =>
+      option
+        .setName("award")
+        .setDescription("Award amount (optional)")
+        .setRequired(false),
+    ),
+  new SlashCommandBuilder()
+    .setName("settlecompetition")
+    .setDescription("Settle a competition and award FiendBucks to each entrant")
+    .addIntegerOption((option) =>
+      option
+        .setName("competition_id")
+        .setDescription("The competition id to settle")
+        .setRequired(true),
+    ),
 ].map((command) => command.toJSON());

@@ -9,8 +9,13 @@ import HandleAward from "./slashCommandHandlers/awardHandler";
 import HandleBalance from "./slashCommandHandlers/balanceHandler";
 import HandleBets from "./slashCommandHandlers/betsHandler";
 import HandleCreateBet from "./slashCommandHandlers/createbetHandler";
+import HandleCreateCompetition from "./slashCommandHandlers/createcompetitionHandler";
 import HandleHelp from "./slashCommandHandlers/helpHandler";
 import HandleLeaderboard from "./slashCommandHandlers/leaderboardHandler";
+import {
+  HandleSettleCompetition,
+  HandleSettleCompetitionModal,
+} from "./slashCommandHandlers/settleCompetitionHandler";
 import HandleSettle from "./slashCommandHandlers/settleHandler";
 
 // Create a new client instance
@@ -49,6 +54,11 @@ client.once("ready", () => {
 
 // Listen for slash command interactions
 client.on("interactionCreate", async (interaction) => {
+  if (interaction.isModalSubmit()) {
+    await HandleSettleCompetitionModal(interaction);
+    return;
+  }
+
   if (!interaction.isChatInputCommand()) return;
 
   const { commandName } = interaction;
@@ -73,6 +83,16 @@ client.on("interactionCreate", async (interaction) => {
 
       case "createbet": {
         await HandleCreateBet(interaction);
+        break;
+      }
+
+      case "createcompetition": {
+        await HandleCreateCompetition(interaction);
+        break;
+      }
+
+      case "settlecompetition": {
+        await HandleSettleCompetition(interaction);
         break;
       }
 

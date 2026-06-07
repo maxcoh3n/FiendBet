@@ -1,4 +1,5 @@
 export const NewBetMessage = "New bet created!";
+export const NewCompetitionMessage = "New competition created! To enter the competition reply with enter";
 export const UnsettledBetsMsg = "Unsettled Bets";
 export const SecretBetMessage = "Secret bet";
 export const semanticYes = ["yes", "y", "yea", "yeah", "yep", "true"];

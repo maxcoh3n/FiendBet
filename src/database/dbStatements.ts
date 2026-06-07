@@ -69,3 +69,43 @@ export const getFiendWagersByBetAndUserStmt = db.prepare(
 export const insertAwardStmt = db.prepare(
   "INSERT INTO awards (userId, amount, description) VALUES (?, ?, ?)",
 );
+
+// Prepared statements for competitions
+export const getCompetitionStmt = db.prepare(
+  "SELECT * FROM competitions WHERE id = ?",
+);
+
+export const getAllCompetitionsStmt = db.prepare("SELECT * FROM competitions");
+
+export const insertCompetitionStmt = db.prepare(
+  "INSERT INTO competitions (description, entryFee, award) VALUES (?, ?, ?)",
+);
+
+export const updateCompetitionIsOpenStmt = db.prepare(
+  "UPDATE competitions SET isOpen = ?, updatedAt = CURRENT_TIMESTAMP WHERE id = ?",
+);
+
+export const updateCompetitionIsSettledStmt = db.prepare(
+  "UPDATE competitions SET isSettled = ?, updatedAt = CURRENT_TIMESTAMP WHERE id = ?",
+);
+
+export const updateCompetitionEntryWinnerStmt = db.prepare(
+  "UPDATE competition_entries SET isWinner = 1, settled = 1 WHERE competitionId = ? AND userId = ?",
+);
+
+export const updateCompetitionEntryAwardStmt = db.prepare(
+  "UPDATE competition_entries SET settled = 1, isWinner = CASE WHEN ? > 0 THEN 1 ELSE 0 END, award = ? WHERE competitionId = ? AND userId = ?",
+);
+
+// Prepared statements for competition entries
+export const insertCompetitionEntryStmt = db.prepare(
+  "INSERT INTO competition_entries (userId, competitionId, settled, isWinner) VALUES (?, ?, ?, ?)",
+);
+
+export const getCompetitionEntriesByCompetitionStmt = db.prepare(
+  "SELECT * FROM competition_entries WHERE competitionId = ?",
+);
+
+export const getCompetitionEntryStmt = db.prepare(
+  "SELECT * FROM competition_entries WHERE competitionId = ? AND userId = ?",
+);

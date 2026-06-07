@@ -52,4 +52,23 @@ export interface Award {
   description: string; // Reason for the award
 }
 
+export interface Competition {
+  id: number;
+  description: string;
+  entryFee: number;
+  award?: number | null;
+  isOpen: boolean;
+  isSettled: boolean;
+}
+
+export interface CompetitionEntry {
+  id: number;
+  userId: string;
+  competitionId: number;
+  settled: boolean;
+  isWinner: boolean;
+  award: number;
+  createdAt: string;
+}
+
 export type Replyable = Message | ChatInputCommandInteraction;

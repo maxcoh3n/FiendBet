@@ -38,3 +38,24 @@ export interface WagerRow {
 export interface FiendWagerRow extends WagerRow {
   name: string; // Fiend's name from the join
 }
+
+export interface CompetitionRow {
+  id: number;
+  description: string;
+  entryFee: number;
+  award: number | null;
+  isOpen: number;
+  isSettled: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CompetitionEntryRow {
+  id: number;
+  userId: string;
+  competitionId: number;
+  settled: number;
+  isWinner: number;
+  award: number;
+  createdAt: string;
+}

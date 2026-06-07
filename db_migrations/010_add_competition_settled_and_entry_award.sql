@@ -1,0 +1,2 @@
+ALTER TABLE competitions ADD COLUMN isSettled BOOLEAN DEFAULT 0;
+ALTER TABLE competition_entries ADD COLUMN award INTEGER DEFAULT 0;

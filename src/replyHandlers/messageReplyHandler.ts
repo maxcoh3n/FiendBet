@@ -1,6 +1,7 @@
 import { Message } from "discord.js";
 import {
   NewBetMessage,
+  NewCompetitionMessage,
   STARTING_BALANCE,
   UnsettledBetsMsg,
 } from "../common/constants";
@@ -8,6 +9,7 @@ import { Fiend } from "../common/types";
 import { getServerNicknameWithMessage } from "../common/util";
 import { createFiend, getFiend } from "../database/dbController";
 import handleAllBetsReply from "./allBetsReplyHandler";
+import handleCompetitionEntryReply from "./competitionEntryReplyHandler";
 import handleNewBetReply from "./newBetReplyHandler";
 
 export default async function handleMessageReply(
@@ -18,6 +20,9 @@ export default async function handleMessageReply(
 
   if (repliedMessage.content.includes(NewBetMessage)) {
     return handleNewBetReply(message, repliedMessage, fiend);
+  }
+  if (repliedMessage.content.includes(NewCompetitionMessage)) {
+    return handleCompetitionEntryReply(message, repliedMessage);
   }
   if (repliedMessage.content.includes(UnsettledBetsMsg)) {
     return handleAllBetsReply(message, repliedMessage, fiend);

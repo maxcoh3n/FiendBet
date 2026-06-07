@@ -66,25 +66,34 @@ export function parseSettleResult(
 }
 
 export function buildSettleResultsMessage(
-  betId: number,
-  betResult: SettleResult,
+  id: number,
+  betResult: SettleResult | null,
   results: [Fiend, number][],
   displayDescription?: string,
+  subjectLabel = "Bet",
+  useMentions = true,
 ) {
   const resultsMessage = results
-    .map(
-      ([fiend, profit]) =>
-        `${pingFiend(fiend.id)} ${profit > 0 ? "gained" : "lost"} ${roundto2decimal(
-          Math.abs(profit),
-        )} FiendBucks From this wager, and now has ${roundto2decimal(fiend.balance)}`,
-    )
+    .map(([fiend, profit]) => {
+      const userLabel = useMentions ? pingFiend(fiend.id) : fiend.name;
+      return `${userLabel} ${profit > 0 ? "gained" : "lost"} ${roundto2decimal(
+        Math.abs(profit),
+      )} FiendBucks from this ${subjectLabel.toLowerCase()}, and now has ${roundto2decimal(
+        fiend.balance,
+      )}`;
+    })
     .join("\n");
 
   const header = displayDescription
-    ? `Bet ID: ${betId}) ${displayDescription}`
-    : `Bet ID ${betId})`;
+    ? `${subjectLabel} ID: ${id}) ${displayDescription}`
+    : `${subjectLabel} ID ${id})`;
 
-  return `${header} has been settled with result: ${betResult}.
+  const settledLine =
+    betResult !== null
+      ? `${header} has been settled with result: ${betResult}.`
+      : `${subjectLabel} #${id} has been settled.`;
+
+  return `${settledLine}
 Results:
 ${resultsMessage}`;
 }

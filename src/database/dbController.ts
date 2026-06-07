@@ -2,6 +2,8 @@ import { STARTING_BALANCE } from "../common/constants";
 import {
   Bet,
   BetTypes,
+  Competition,
+  CompetitionEntry,
   Fiend,
   FiendWager,
   SpreadTypes,
@@ -11,6 +13,8 @@ import { getPayout } from "../common/util";
 import db from "./db";
 import {
   dbRowToBet,
+  dbRowToCompetition,
+  dbRowToCompetitionEntry,
   dbRowToFiend,
   dbRowToFiendWager,
   dbRowToWager,
@@ -23,6 +27,9 @@ import {
   closeBetStmt,
   getAllFiendsStmt,
   getBetStmt,
+  getCompetitionEntriesByCompetitionStmt,
+  getCompetitionEntryStmt,
+  getCompetitionStmt,
   getFiendStmt,
   getFiendWagersByBetAndUserStmt,
   getFiendWagersByBetStmt,
@@ -34,16 +41,29 @@ import {
   getWagersByBetStmt,
   insertAwardStmt,
   insertBetStmt,
+  insertCompetitionEntryStmt,
+  insertCompetitionStmt,
   insertFiendStmt,
   insertWagerStmt,
   settleBetStmt,
   settleWagerStmt,
+  updateCompetitionEntryAwardStmt,
+  updateCompetitionEntryWinnerStmt,
+  updateCompetitionIsOpenStmt,
+  updateCompetitionIsSettledStmt,
   updateFiendBalanceStmt,
   updateFiendCreditStmt,
   updateWagerStmt,
   voidBetStmt,
 } from "./dbStatements";
-import { BetRow, FiendRow, FiendWagerRow, WagerRow } from "./models";
+import {
+  BetRow,
+  CompetitionEntryRow,
+  CompetitionRow,
+  FiendRow,
+  FiendWagerRow,
+  WagerRow,
+} from "./models";
 
 export function addFiendBucks(userId: string, amount: number): Fiend {
   const existingFiend = getFiendStmt.get(userId) as FiendRow | undefined;
@@ -115,6 +135,11 @@ export function createBet(
 export function getBet(id: number): Bet | null {
   const row = getBetStmt.get(id) as BetRow | undefined;
   return row ? dbRowToBet(row) : null;
+}
+
+export function getCompetition(id: number): Competition | null {
+  const row = getCompetitionStmt.get(id) as CompetitionRow | undefined;
+  return row ? dbRowToCompetition(row) : null;
 }
 
 export function getUnsettledBets(): Bet[] {
@@ -336,6 +361,265 @@ export function getFiendWagersByBetAndUser(
     userId,
   ) as FiendWagerRow[];
   return rows.map(dbRowToFiendWager);
+}
+
+export function createCompetition(
+  description: string,
+  entryFee: number,
+  award: number | null = null,
+): Competition {
+  const result = insertCompetitionStmt.run(description, entryFee, award);
+  const row = db
+    .prepare("SELECT * FROM competitions WHERE id = ?")
+    .get(result.lastInsertRowid) as any;
+  return dbRowToCompetition(row);
+}
+
+export function getCompetitionEntriesByCompetition(
+  competitionId: number,
+): CompetitionEntry[] {
+  const rows = getCompetitionEntriesByCompetitionStmt.all(
+    competitionId,
+  ) as CompetitionEntryRow[];
+  return rows.map(dbRowToCompetitionEntry);
+}
+
+export function settleCompetition(
+  competitionId: number,
+  awards: Array<{ userId: string; amount: number }>,
+): [Fiend, number][] {
+  const competition = getCompetitionStmt.get(competitionId) as
+    | CompetitionRow
+    | undefined;
+  if (!competition) {
+    throw new Error("Competition does not exist");
+  }
+
+  if (competition.isSettled) {
+    throw new Error("Competition is already settled");
+  }
+
+  const entries = getCompetitionEntriesByCompetitionStmt.all(
+    competitionId,
+  ) as CompetitionEntryRow[];
+
+  if (!entries.length) {
+    throw new Error("Competition has no entries");
+  }
+
+  const enteredUserIds = new Set(entries.map((entry) => entry.userId));
+
+  if (awards.length !== enteredUserIds.size) {
+    throw new Error("Must provide a payout for each competition entrant.");
+  }
+
+  const seenUserIds = new Set<string>();
+  for (const awardItem of awards) {
+    if (seenUserIds.has(awardItem.userId)) {
+      throw new Error("Duplicate user payout found.");
+    }
+    if (!enteredUserIds.has(awardItem.userId)) {
+      throw new Error(
+        `User ${awardItem.userId} did not enter competition ${competitionId}`,
+      );
+    }
+    seenUserIds.add(awardItem.userId);
+  }
+
+  const results: [Fiend, number][] = [];
+  const transaction = db.transaction(() => {
+    updateCompetitionIsSettledStmt.run(1, competitionId);
+    updateCompetitionIsOpenStmt.run(0, competitionId);
+
+    for (const awardItem of awards) {
+      updateCompetitionEntryAwardStmt.run(
+        awardItem.amount,
+        awardItem.amount,
+        competitionId,
+        awardItem.userId,
+      );
+
+      updateFiendBalanceStmt.run(awardItem.amount, awardItem.userId);
+
+      if (awardItem.amount !== 0) {
+        insertAwardStmt.run(
+          awardItem.userId,
+          awardItem.amount,
+          `Competition ${competitionId} payout`,
+        );
+      }
+
+      const updatedFiend = dbRowToFiend(
+        getFiendStmt.get(awardItem.userId) as FiendRow,
+      );
+      results.push([updatedFiend, awardItem.amount]);
+    }
+  });
+
+  transaction();
+
+  return results;
+}
+
+export function createCompetitionEntry(
+  userId: string,
+  competitionId: number,
+): any {
+  // Prevent duplicate entries
+  const existing = getCompetitionEntryStmt.get(competitionId, userId) as
+    | CompetitionEntryRow
+    | undefined;
+  if (existing) {
+    return dbRowToCompetitionEntry(existing);
+  }
+
+  // Look up competition and fee
+  const competitionRow = getCompetitionStmt.get(competitionId) as
+    | any
+    | undefined;
+  if (!competitionRow) {
+    throw new Error("Competition does not exist");
+  }
+
+  const entryFee = competitionRow.entryFee as number;
+
+  // Check that competition is open
+  if (competitionRow.isOpen === 0 || competitionRow.isOpen === false) {
+    throw new Error("Competition closed");
+  }
+
+  // Ensure user exists
+  const fiendRow = getFiendStmt.get(userId) as FiendRow | undefined;
+  if (!fiendRow) {
+    throw new Error("User does not exist");
+  }
+
+  if (fiendRow.balance < entryFee) {
+    throw new Error("Insufficient funds");
+  }
+
+  // Deduct fee from user's balance and insert entry atomically
+  const transaction = db.transaction(() => {
+    updateFiendBalanceStmt.run(-entryFee, userId);
+    insertCompetitionEntryStmt.run(userId, competitionId, 0, 0);
+  });
+
+  transaction();
+
+  const row = db
+    .prepare("SELECT * FROM competition_entries WHERE id = last_insert_rowid()")
+    .get() as CompetitionEntryRow;
+  return dbRowToCompetitionEntry(row);
+}
+
+export function createCompetitionEntryWithCustomFee(
+  userId: string,
+  competitionId: number,
+  fee: number,
+): any {
+  const existing = getCompetitionEntryStmt.get(competitionId, userId) as
+    | CompetitionEntryRow
+    | undefined;
+  if (existing) {
+    return dbRowToCompetitionEntry(existing);
+  }
+
+  const competitionRow = getCompetitionStmt.get(competitionId) as
+    | any
+    | undefined;
+  if (!competitionRow) {
+    throw new Error("Competition does not exist");
+  }
+
+  // Check that competition is open
+  if (competitionRow.isOpen === 0 || competitionRow.isOpen === false) {
+    throw new Error("Competition closed");
+  }
+
+  if (fee <= 0) {
+    throw new Error("Reentry fee must be greater than zero");
+  }
+
+  const fiendRow = getFiendStmt.get(userId) as FiendRow | undefined;
+  if (!fiendRow) {
+    throw new Error("User does not exist");
+  }
+
+  if (fiendRow.balance < fee) {
+    throw new Error("Insufficient funds");
+  }
+
+  const transaction = db.transaction(() => {
+    updateFiendBalanceStmt.run(-fee, userId);
+    insertCompetitionEntryStmt.run(userId, competitionId, 0, 0);
+  });
+
+  transaction();
+
+  const row = db
+    .prepare("SELECT * FROM competition_entries WHERE id = last_insert_rowid()")
+    .get() as CompetitionEntryRow;
+  return dbRowToCompetitionEntry(row);
+}
+
+export function deductFiendBalance(userId: string, amount: number): Fiend {
+  if (amount <= 0) {
+    throw new Error("Amount must be greater than zero");
+  }
+
+  const fiendRow = getFiendStmt.get(userId) as FiendRow | undefined;
+  if (!fiendRow) {
+    throw new Error("User does not exist");
+  }
+
+  if (fiendRow.balance < amount) {
+    throw new Error("Insufficient funds");
+  }
+
+  updateFiendBalanceStmt.run(-amount, userId);
+  return dbRowToFiend(getFiendStmt.get(userId) as FiendRow);
+}
+
+export function closeCompetition(competitionId: number): void {
+  updateCompetitionIsOpenStmt.run(0, competitionId);
+}
+
+export function awardCompetitionWinner(
+  competitionId: number,
+  userId: string,
+): { balance: number } {
+  const competition = getCompetitionStmt.get(competitionId) as any | undefined;
+  if (!competition) throw new Error("Competition does not exist");
+
+  // Transaction: mark winner, close competition, award fiend
+  const transaction = db.transaction(() => {
+    updateCompetitionEntryWinnerStmt.run(competitionId, userId);
+    updateCompetitionIsOpenStmt.run(0, competitionId);
+
+    if (competition.award !== null && competition.award !== undefined) {
+      updateFiendBalanceStmt.run(competition.award, userId);
+      insertAwardStmt.run(
+        userId,
+        competition.award,
+        `Competition ${competitionId} award`,
+      );
+    }
+  });
+
+  transaction();
+
+  const fiendRow = getFiendStmt.get(userId) as FiendRow;
+  return { balance: fiendRow.balance };
+}
+
+export function hasCompetitionEntry(
+  userId: string,
+  competitionId: number,
+): boolean {
+  const existing = getCompetitionEntryStmt.get(competitionId, userId) as
+    | CompetitionEntryRow
+    | undefined;
+  return !!existing;
 }
 
 export function awardFiend(

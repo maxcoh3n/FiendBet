@@ -5,11 +5,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Commands
 
 ### Build and Development
+
 - `yarn build` - Compiles TypeScript to JavaScript in the `/build/` directory
 - `yarn dev` - Runs the compiled bot from `/build/index.js`
 - `npx ts-node src/index.ts` - Run TypeScript directly without building (for testing)
 
 ### Code Quality
+
 - No lint command currently configured. Consider running ESLint directly: `npx eslint src/`
 - No type checking command configured. Run TypeScript compiler in check mode: `npx tsc --noEmit`
 - No test command configured (package.json test script exits with error)
@@ -60,6 +62,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Environment Setup
 
 Required environment variables in `.env`:
+
 ```
 TOKEN=<Discord bot token>
 CLIENT_ID=<Discord application client ID>

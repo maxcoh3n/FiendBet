@@ -1,12 +1,19 @@
 import {
   Bet,
   BetTypes,
+  Competition,
   Fiend,
   FiendWager,
   SpreadTypes,
   Wager,
 } from "../common/types";
-import { BetRow, FiendRow, FiendWagerRow, WagerRow } from "./models";
+import {
+  BetRow,
+  CompetitionEntryRow,
+  FiendRow,
+  FiendWagerRow,
+  WagerRow,
+} from "./models";
 
 // Helper functions for type conversion
 export function serializeChoice(choice: boolean | SpreadTypes): string {
@@ -86,5 +93,28 @@ export function dbRowToFiendWager(row: FiendWagerRow): FiendWager {
     choice: deserializeChoice(row.choice),
     result: deserializeResult(row.result),
     name: row.name,
+  };
+}
+
+export function dbRowToCompetition(row: any): Competition {
+  return {
+    id: row.id,
+    description: row.description,
+    entryFee: row.entryFee,
+    award: row.award === null ? null : row.award,
+    isOpen: Boolean(row.isOpen),
+    isSettled: Boolean(row.isSettled),
+  };
+}
+
+export function dbRowToCompetitionEntry(row: CompetitionEntryRow) {
+  return {
+    id: row.id,
+    userId: row.userId,
+    competitionId: row.competitionId,
+    settled: Boolean(row.settled),
+    isWinner: Boolean(row.isWinner),
+    award: row.award || 0,
+    createdAt: row.createdAt,
   };
 }
