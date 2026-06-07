@@ -1,5 +1,5 @@
 import { Message } from "discord.js";
-import { NewCompetitionMessage, STARTING_BALANCE } from "../common/constants";
+import { STARTING_BALANCE } from "../common/constants";
 import { getServerNicknameWithMessage } from "../common/util";
 import {
   awardCompetitionWinner,
@@ -18,11 +18,11 @@ export default async function handleCompetitionReply(
 ) {
   const content = message.content.toLowerCase();
 
-  if (!repliedMessage.content.includes(NewCompetitionMessage)) return;
+  if (!repliedMessage.content.includes("New competition created!")) return;
 
   if (content.match(/\bsettle\b/)) {
     await message.reply(
-      'Please use the /settlecompetition command to settle the competition.',
+      "Please use the /settlecompetition command to settle the competition.",
     );
     return;
   }
@@ -38,7 +38,7 @@ export default async function handleCompetitionReply(
       return;
     }
 
-    const matchW = repliedMessage.content.match(/#(\d+)/);
+    const matchW = repliedMessage.content.match(/\*\*ID:\*\*\s*(\d+)/);
     const competitionIdW = matchW ? parseInt(matchW[1], 10) : null;
     if (!competitionIdW) {
       await message.reply("Could not find competition id in the message.");
@@ -60,7 +60,7 @@ export default async function handleCompetitionReply(
     return;
   }
 
-  const match = repliedMessage.content.match(/#(\d+)/);
+  const match = repliedMessage.content.match(/\*\*ID:\*\*\s*(\d+)/);
   const competitionId = match ? parseInt(match[1], 10) : null;
 
   if (!competitionId) {

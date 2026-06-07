@@ -13,6 +13,7 @@ import {
   getCompetition,
   getCompetitionEntriesByCompetition,
   getFiend,
+  hasCompetitionEntry,
   settleCompetition,
 } from "../database/dbController";
 
@@ -23,6 +24,7 @@ export async function HandleSettleCompetition(
   interaction: ChatInputCommandInteraction,
 ) {
   const competitionId = interaction.options.getInteger("competition_id", true);
+  const winner = interaction.options.getUser("winner", false);
 
   const competition = getCompetition(competitionId);
   if (!competition) {
@@ -50,24 +52,76 @@ export async function HandleSettleCompetition(
     return;
   }
 
+  if (winner) {
+    if (
+      competition.award === null ||
+      competition.award === undefined ||
+      competition.award === 0
+    ) {
+      await sendMessageEphemeral(
+        interaction,
+        "Competition must have a set award to have a single winner.",
+      );
+      return;
+    }
+
+    const winnerId = winner.id;
+    if (!hasCompetitionEntry(winnerId, competitionId)) {
+      await sendMessageEphemeral(
+        interaction,
+        `User <@${winnerId}> did not enter competition #${competitionId}.`,
+      );
+      return;
+    }
+
+    try {
+      const awards = entries.map((entry) => ({
+        userId: entry.userId,
+        amount: entry.userId === winnerId ? competition.award! : 0,
+      }));
+      const results = settleCompetition(competitionId, awards);
+      results.sort((a, b) => b[1] - a[1]);
+      const resultsMessage = buildSettleResultsMessage(
+        competitionId,
+        null,
+        results,
+        competition.description,
+        "Competition",
+        true,
+      );
+      await interaction.reply({ content: resultsMessage });
+    } catch (err: any) {
+      console.error("Error settling competition:", err);
+      await interaction.reply({
+        content:
+          err?.message ||
+          "Failed to settle competition. Please check the payout format and try again.",
+        ephemeral: true,
+      });
+    }
+
+    return;
+  }
+
   const modal = new ModalBuilder()
     .setCustomId(`${MODAL_CUSTOM_ID_PREFIX}${competitionId}`)
-    .setTitle(`Settle competition #${competitionId}`);
+    .setTitle(`Settle Competition #${competitionId}`);
 
   const template = entriesToTemplate(entries);
+
   const payoutsInput = new TextInputBuilder()
     .setCustomId(MODAL_FIELD_PAYOUTS)
     .setLabel("Payouts for each entrant")
     .setStyle(TextInputStyle.Paragraph)
-    .setPlaceholder("<@123456789> 100")
     .setValue(template)
     .setRequired(true);
 
-  const row = new ActionRowBuilder<TextInputBuilder>().addComponents(
+  const payoutsRow = new ActionRowBuilder<TextInputBuilder>().addComponents(
     payoutsInput,
   );
 
-  modal.addComponents(row);
+  modal.addComponents(payoutsRow);
+
   await interaction.showModal(modal);
 }
 

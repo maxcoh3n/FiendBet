@@ -1,6 +1,8 @@
 import { ChatInputCommandInteraction } from "discord.js";
-import { sendMessageEphemeral } from "../common/util";
-import { NewCompetitionMessage } from "../common/constants";
+import {
+  formatCompetitionCreateMessage,
+  sendMessageEphemeral,
+} from "../common/util";
 import { createCompetition } from "../database/dbController";
 
 export default async function HandleCreateCompetition(
@@ -22,9 +24,7 @@ export default async function HandleCreateCompetition(
 
   try {
     const comp = createCompetition(description, entryFee, award ?? null);
-    await interaction.reply(
-      `Created competition #${comp.id}: ${comp.description} (Entry: ${comp.entryFee})\n${NewCompetitionMessage}`,
-    );
+    await interaction.reply(formatCompetitionCreateMessage(comp));
   } catch (err) {
     console.error("Error creating competition:", err);
     await sendMessageEphemeral(interaction, "Failed to create competition.");

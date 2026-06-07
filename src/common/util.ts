@@ -70,6 +70,22 @@ export function competitionEntryToString(
   return `${entrantName} entered`;
 }
 
+export function formatCompetitionCreateMessage(
+  competition: Competition,
+): string {
+  const awardLine =
+    competition.award !== null && competition.award !== undefined
+      ? `\nPrize: ${competition.award}`
+      : "";
+
+  return (
+    `New competition created!\n` +
+    `**ID:** ${competition.id})\n` +
+    `${competition.description}\n` +
+    `Entry fee: ${competition.entryFee}${awardLine}`
+  );
+}
+
 export function getPayout(
   wagerAmount: number,
   choice: boolean | SpreadTypes,

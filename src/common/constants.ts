@@ -1,6 +1,5 @@
 export const NewBetMessage = "New bet created!";
-export const NewCompetitionMessage =
-  "New competition created! To enter the competition reply with enter";
+export const NewCompetitionMessage = "New competition created!";
 export const UnsettledBetsMsg = "Unsettled Bets";
 export const UnsettledCompetitionsMsg = "Unsettled Competitions";
 export const SecretBetMessage = "Secret bet";

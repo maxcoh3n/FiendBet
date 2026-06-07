@@ -142,5 +142,13 @@ export const commands = [
         .setName("competition_id")
         .setDescription("The competition id to settle")
         .setRequired(true),
+    )
+    .addUserOption((option) =>
+      option
+        .setName("winner")
+        .setDescription(
+          "The user that won the competition (requires competition award)",
+        )
+        .setRequired(false),
     ),
 ].map((command) => command.toJSON());
