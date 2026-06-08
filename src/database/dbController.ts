@@ -49,6 +49,7 @@ import {
   settleBetStmt,
   settleWagerStmt,
   updateCompetitionEntryAwardStmt,
+  updateCompetitionEntryReentryStmt,
   updateCompetitionEntryWinnerStmt,
   updateCompetitionIsOpenStmt,
   updateCompetitionIsSettledStmt,
@@ -441,12 +442,17 @@ export function settleCompetition(
   }
 
   const results: [Fiend, number][] = [];
-  const totalEntryFeePerEntrant = competition.entryFee as number;
+  const entryFeeByUser = new Map<string, number>();
+  for (const entry of entries) {
+    entryFeeByUser.set(entry.userId, entry.entry_fee);
+  }
+
   const transaction = db.transaction(() => {
     updateCompetitionIsSettledStmt.run(1, competitionId);
     updateCompetitionIsOpenStmt.run(0, competitionId);
 
     for (const awardItem of awards) {
+      const entryFee = entryFeeByUser.get(awardItem.userId) ?? 0;
       updateCompetitionEntryAwardStmt.run(
         awardItem.amount,
         awardItem.amount,
@@ -467,7 +473,7 @@ export function settleCompetition(
       const updatedFiend = dbRowToFiend(
         getFiendStmt.get(awardItem.userId) as FiendRow,
       );
-      results.push([updatedFiend, awardItem.amount - totalEntryFeePerEntrant]);
+      results.push([updatedFiend, awardItem.amount - entryFee]);
     }
   });
 
@@ -516,7 +522,7 @@ export function createCompetitionEntry(
   // Deduct fee from user's balance and insert entry atomically
   const transaction = db.transaction(() => {
     updateFiendBalanceStmt.run(-entryFee, userId);
-    insertCompetitionEntryStmt.run(userId, competitionId, 0, 0);
+    insertCompetitionEntryStmt.run(userId, competitionId, 0, 0, 0, entryFee, 1);
   });
 
   transaction();
@@ -566,7 +572,7 @@ export function createCompetitionEntryWithCustomFee(
 
   const transaction = db.transaction(() => {
     updateFiendBalanceStmt.run(-fee, userId);
-    insertCompetitionEntryStmt.run(userId, competitionId, 0, 0);
+    insertCompetitionEntryStmt.run(userId, competitionId, 0, 0, 0, fee, 1);
   });
 
   transaction();
@@ -574,6 +580,45 @@ export function createCompetitionEntryWithCustomFee(
   const row = db
     .prepare("SELECT * FROM competition_entries WHERE id = last_insert_rowid()")
     .get() as CompetitionEntryRow;
+  return dbRowToCompetitionEntry(row);
+}
+
+export function reenterCompetitionEntry(
+  userId: string,
+  competitionId: number,
+  fee: number,
+): any {
+  if (fee <= 0) {
+    throw new Error("Reentry fee must be greater than zero");
+  }
+
+  const existingEntry = getCompetitionEntryStmt.get(competitionId, userId) as
+    | CompetitionEntryRow
+    | undefined;
+  if (!existingEntry) {
+    throw new Error("Competition entry does not exist");
+  }
+
+  const fiendRow = getFiendStmt.get(userId) as FiendRow | undefined;
+  if (!fiendRow) {
+    throw new Error("User does not exist");
+  }
+
+  if (fiendRow.balance < fee) {
+    throw new Error("Insufficient funds");
+  }
+
+  const transaction = db.transaction(() => {
+    updateFiendBalanceStmt.run(-fee, userId);
+    updateCompetitionEntryReentryStmt.run(fee, competitionId, userId);
+  });
+
+  transaction();
+
+  const row = getCompetitionEntryStmt.get(
+    competitionId,
+    userId,
+  ) as CompetitionEntryRow;
   return dbRowToCompetitionEntry(row);
 }
 

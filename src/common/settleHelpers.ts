@@ -72,13 +72,16 @@ export function buildSettleResultsMessage(
   displayDescription?: string,
   subjectLabel = "Bet",
   useMentions = true,
+  entriesByUser?: Map<string, number>,
 ) {
   const resultsMessage = results
     .map(([fiend, profit]) => {
       const userLabel = useMentions ? pingFiend(fiend.id) : fiend.name;
+      const entries = entriesByUser?.get(fiend.id) ?? 1;
+      const entryText = entries > 1 ? ` with ${entries} entries` : "";
       return `${userLabel} ${profit > 0 ? "gained" : "lost"} ${roundto2decimal(
         Math.abs(profit),
-      )} FiendBucks from this ${subjectLabel.toLowerCase()}, and now has ${roundto2decimal(
+      )} FiendBucks${entryText} from this ${subjectLabel.toLowerCase()}, and now has ${roundto2decimal(
         fiend.balance,
       )}`;
     })

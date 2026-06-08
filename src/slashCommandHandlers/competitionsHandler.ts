@@ -56,10 +56,12 @@ export default async function HandleCompetitions(
         const resultsText = entries
           .map((entry, index) => {
             const name = entrantNames[index];
-            const netAmount = (entry.award ?? 0) - competition.entryFee;
+            const netAmount = (entry.award ?? 0) - entry.entryFee;
+            const entryText =
+              entry.entries > 1 ? ` with ${entry.entries} entries` : "";
             return `${name} ${netAmount > 0 ? "gained" : "lost"} ${roundToTwoDecimals(
               Math.abs(netAmount),
-            )} FiendBucks`;
+            )} FiendBucks${entryText}`;
           })
           .join("\n");
 

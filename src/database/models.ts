@@ -57,5 +57,7 @@ export interface CompetitionEntryRow {
   settled: number;
   isWinner: number;
   award: number;
+  entry_fee: number;
+  entries: number;
   createdAt: string;
 }

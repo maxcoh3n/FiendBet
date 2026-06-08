@@ -97,9 +97,13 @@ export const updateCompetitionEntryAwardStmt = db.prepare(
   "UPDATE competition_entries SET settled = 1, isWinner = CASE WHEN ? > 0 THEN 1 ELSE 0 END, award = ? WHERE competitionId = ? AND userId = ?",
 );
 
+export const updateCompetitionEntryReentryStmt = db.prepare(
+  "UPDATE competition_entries SET entry_fee = entry_fee + ?, entries = entries + 1 WHERE competitionId = ? AND userId = ?",
+);
+
 // Prepared statements for competition entries
 export const insertCompetitionEntryStmt = db.prepare(
-  "INSERT INTO competition_entries (userId, competitionId, settled, isWinner) VALUES (?, ?, ?, ?)",
+  "INSERT INTO competition_entries (userId, competitionId, settled, isWinner, award, entry_fee, entries) VALUES (?, ?, ?, ?, ?, ?, ?)",
 );
 
 export const getCompetitionEntriesByCompetitionStmt = db.prepare(

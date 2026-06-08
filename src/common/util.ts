@@ -67,7 +67,11 @@ export function competitionEntryToString(
   competitionEntry: CompetitionEntry,
   entrantName: string,
 ): string {
-  return `${entrantName} entered`;
+  if (competitionEntry.entries > 1) {
+    return `${entrantName} entered ${competitionEntry.entries} times for ${competitionEntry.entryFee}`;
+  }
+
+  return `${entrantName} entered for ${competitionEntry.entryFee}`;
 }
 
 export function formatCompetitionCreateMessage(

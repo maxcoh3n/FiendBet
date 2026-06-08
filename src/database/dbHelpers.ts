@@ -115,6 +115,8 @@ export function dbRowToCompetitionEntry(row: CompetitionEntryRow) {
     settled: Boolean(row.settled),
     isWinner: Boolean(row.isWinner),
     award: row.award || 0,
+    entryFee: row.entry_fee || 0,
+    entries: row.entries || 0,
     createdAt: row.createdAt,
   };
 }

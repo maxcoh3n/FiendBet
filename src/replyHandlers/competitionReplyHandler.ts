@@ -6,10 +6,10 @@ import {
   createCompetitionEntry,
   createCompetitionEntryWithCustomFee,
   createFiend,
-  deductFiendBalance,
   getCompetition,
   getFiend,
   hasCompetitionEntry,
+  reenterCompetitionEntry,
 } from "../database/dbController";
 
 export default async function handleCompetitionReply(
@@ -140,7 +140,7 @@ export default async function handleCompetitionReply(
       }
 
       try {
-        deductFiendBalance(message.author.id, chargeAmount);
+        reenterCompetitionEntry(message.author.id, competitionId, chargeAmount);
         await message.react("🔁");
         return;
       } catch (err: any) {

@@ -68,6 +68,8 @@ export interface CompetitionEntry {
   settled: boolean;
   isWinner: boolean;
   award: number;
+  entryFee: number;
+  entries: number;
   createdAt: string;
 }
 

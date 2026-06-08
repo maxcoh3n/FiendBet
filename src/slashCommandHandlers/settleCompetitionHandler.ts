@@ -81,6 +81,9 @@ export async function HandleSettleCompetition(
       }));
       const results = settleCompetition(competitionId, awards);
       results.sort((a, b) => b[1] - a[1]);
+      const entryCounts = new Map(
+        entries.map((entry) => [entry.userId, entry.entries]),
+      );
       const resultsMessage = buildSettleResultsMessage(
         competitionId,
         null,
@@ -88,6 +91,7 @@ export async function HandleSettleCompetition(
         competition.description,
         "Competition",
         true,
+        entryCounts,
       );
       await interaction.reply({ content: resultsMessage });
     } catch (err: any) {
@@ -108,11 +112,15 @@ export async function HandleSettleCompetition(
     .setTitle(`Settle Competition #${competitionId}`);
 
   const template = entriesToTemplate(entries);
-
   const payoutsInput = new TextInputBuilder()
     .setCustomId(MODAL_FIELD_PAYOUTS)
-    .setLabel("Payouts for each entrant (ignore entry fees)")
+    .setLabel("Payouts for each entrant")
     .setStyle(TextInputStyle.Paragraph)
+    .setPlaceholder(
+      competition.description?.trim()
+        ? `${competition.description}\n\n<@123456789> 100`
+        : "<@123456789> 100",
+    )
     .setValue(template)
     .setRequired(true);
 
@@ -170,6 +178,9 @@ export async function HandleSettleCompetitionModal(
     const awards = parsePayoutLines(rawPayouts, entries);
     const results = settleCompetition(competitionId, awards);
     results.sort((a, b) => b[1] - a[1]);
+    const entryCounts = new Map(
+      entries.map((entry) => [entry.userId, entry.entries]),
+    );
     const resultsMessage = buildSettleResultsMessage(
       competitionId,
       null,
@@ -177,6 +188,7 @@ export async function HandleSettleCompetitionModal(
       competition.description,
       "Competition",
       true,
+      entryCounts,
     );
     await interaction.reply({
       content: resultsMessage,
@@ -226,8 +238,8 @@ function parsePayoutLines(
   const seen = new Set<string>();
 
   for (const line of lines) {
-    const mentionMatch = line.match(/(?:.*\s)?<@!?(\d+)>\s+(-?\d+(?:\.\d+)?)$/);
-    const idMatch = line.match(/(?:.*\s)?(\d+)\s+(-?\d+(?:\.\d+)?)$/);
+    const mentionMatch = line.match(/(?:.*\s)?<@!?(\d+)>\s+(-?\d+)$/);
+    const idMatch = line.match(/(?:.*\s)?(\d+)\s+(-?\d+)$/);
     let userId: string | undefined;
     let amountString: string | undefined;
 
@@ -262,7 +274,7 @@ function parsePayoutLines(
       );
     }
 
-    const amount = parseFloat(amountString);
+    const amount = parseInt(amountString, 10);
     if (Number.isNaN(amount)) {
       throw new Error(`Invalid amount for line: "${line}".`);
     }
