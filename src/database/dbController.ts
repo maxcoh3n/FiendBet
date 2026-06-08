@@ -25,9 +25,9 @@ import {
 import {
   closeAllBetsStmt,
   closeBetStmt,
+  getAllCompetitionsStmt,
   getAllFiendsStmt,
   getBetStmt,
-  getAllCompetitionsStmt,
   getCompetitionEntriesByCompetitionStmt,
   getCompetitionEntryStmt,
   getCompetitionStmt,
@@ -150,6 +150,10 @@ export function getAllCompetitions(): Competition[] {
 
 export function getUnsettledCompetitions(): Competition[] {
   return getAllCompetitions().filter((competition) => !competition.isSettled);
+}
+
+export function getSettledCompetitions(): Competition[] {
+  return getAllCompetitions().filter((competition) => competition.isSettled);
 }
 
 export function getUnsettledBets(): Bet[] {
@@ -437,6 +441,7 @@ export function settleCompetition(
   }
 
   const results: [Fiend, number][] = [];
+  const totalEntryFeePerEntrant = competition.entryFee as number;
   const transaction = db.transaction(() => {
     updateCompetitionIsSettledStmt.run(1, competitionId);
     updateCompetitionIsOpenStmt.run(0, competitionId);
@@ -462,7 +467,7 @@ export function settleCompetition(
       const updatedFiend = dbRowToFiend(
         getFiendStmt.get(awardItem.userId) as FiendRow,
       );
-      results.push([updatedFiend, awardItem.amount]);
+      results.push([updatedFiend, awardItem.amount - totalEntryFeePerEntrant]);
     }
   });
 

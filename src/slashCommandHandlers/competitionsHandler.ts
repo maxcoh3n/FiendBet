@@ -1,15 +1,80 @@
 import { ChatInputCommandInteraction } from "discord.js";
 import { UnsettledCompetitionsMsg } from "../common/constants";
-import { competitionEntryToString, competitionToString } from "../common/util";
+import {
+  competitionEntryToString,
+  competitionToString,
+  roundToTwoDecimals,
+} from "../common/util";
 import {
   getCompetitionEntriesByCompetition,
   getFiend,
+  getSettledCompetitions,
   getUnsettledCompetitions,
 } from "../database/dbController";
 
 export default async function HandleCompetitions(
   interaction: ChatInputCommandInteraction,
 ) {
+  const subcommand = interaction.options.getSubcommand(false);
+
+  if (subcommand === "settled") {
+    const competitions = getSettledCompetitions();
+
+    if (competitions.length === 0) {
+      await interaction.reply(
+        "There are no settled competitions at the moment.",
+      );
+      return;
+    }
+
+    const competitionMessages = await Promise.all(
+      competitions.map(async (competition) => {
+        const entries = getCompetitionEntriesByCompetition(competition.id);
+
+        const entrantNames = await Promise.all(
+          entries.map(async (entry) => {
+            const fiend = getFiend(entry.userId);
+            if (fiend) {
+              return fiend.name;
+            }
+
+            if (!interaction.guild) {
+              return entry.userId;
+            }
+
+            try {
+              const member = await interaction.guild.members.fetch(
+                entry.userId,
+              );
+              return member?.displayName ?? entry.userId;
+            } catch {
+              return entry.userId;
+            }
+          }),
+        );
+
+        const resultsText = entries
+          .map((entry, index) => {
+            const name = entrantNames[index];
+            const netAmount = (entry.award ?? 0) - competition.entryFee;
+            return `${name} ${netAmount > 0 ? "gained" : "lost"} ${roundToTwoDecimals(
+              Math.abs(netAmount),
+            )} FiendBucks`;
+          })
+          .join("\n");
+
+        const header = competition.description
+          ? `Competition ID: ${competition.id}) ${competition.description}`
+          : `Competition ID ${competition.id})`;
+
+        return `${header}\nResults:\n${resultsText}`;
+      }),
+    );
+
+    await interaction.reply(competitionMessages.join("\n\n"));
+    return;
+  }
+
   const competitions = getUnsettledCompetitions();
 
   if (competitions.length === 0) {

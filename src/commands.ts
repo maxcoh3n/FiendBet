@@ -133,7 +133,17 @@ export const commands = [
     ),
   new SlashCommandBuilder()
     .setName("competitions")
-    .setDescription("View all unsettled competitions and current entrants"),
+    .setDescription("View competitions and competition results")
+    .addSubcommand((subcommand) =>
+      subcommand
+        .setName("unsettled")
+        .setDescription("View all unsettled competitions and current entrants"),
+    )
+    .addSubcommand((subcommand) =>
+      subcommand
+        .setName("settled")
+        .setDescription("View all settled competitions and settlement results"),
+    ),
   new SlashCommandBuilder()
     .setName("settlecompetition")
     .setDescription("Settle a competition and award FiendBucks to each entrant")

@@ -111,7 +111,7 @@ export async function HandleSettleCompetition(
 
   const payoutsInput = new TextInputBuilder()
     .setCustomId(MODAL_FIELD_PAYOUTS)
-    .setLabel("Payouts for each entrant")
+    .setLabel("Payouts for each entrant (ignore entry fees)")
     .setStyle(TextInputStyle.Paragraph)
     .setValue(template)
     .setRequired(true);
@@ -226,8 +226,8 @@ function parsePayoutLines(
   const seen = new Set<string>();
 
   for (const line of lines) {
-    const mentionMatch = line.match(/(?:.*\s)?<@!?(\d+)>\s+(-?\d+)$/);
-    const idMatch = line.match(/(?:.*\s)?(\d+)\s+(-?\d+)$/);
+    const mentionMatch = line.match(/(?:.*\s)?<@!?(\d+)>\s+(-?\d+(?:\.\d+)?)$/);
+    const idMatch = line.match(/(?:.*\s)?(\d+)\s+(-?\d+(?:\.\d+)?)$/);
     let userId: string | undefined;
     let amountString: string | undefined;
 
@@ -262,7 +262,7 @@ function parsePayoutLines(
       );
     }
 
-    const amount = parseInt(amountString, 10);
+    const amount = parseFloat(amountString);
     if (Number.isNaN(amount)) {
       throw new Error(`Invalid amount for line: "${line}".`);
     }
