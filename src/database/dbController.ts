@@ -112,6 +112,7 @@ export function createBet(
   secretDescription: string | null,
   type: BetTypes,
   moneyLine: number | undefined = undefined,
+  moneyLineNo: number | undefined = undefined,
   spread: number | undefined = undefined,
 ): Bet {
   if (type === BetTypes.MONEYLINE && !moneyLine) {
@@ -127,6 +128,7 @@ export function createBet(
     secretDescription,
     type,
     moneyLine,
+    moneyLineNo,
     spread,
     1,
     0,
@@ -255,6 +257,7 @@ export function settleBet(
         isBetWon,
         bet.type as BetTypes,
         bet.moneyLine,
+        bet.moneyLineNo,
       );
 
       // Add payout to fiend's balance

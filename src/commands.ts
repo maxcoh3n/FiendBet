@@ -81,9 +81,16 @@ export const commands = [
         )
         .addIntegerOption((option) =>
           option
-            .setName("line")
+            .setName("yes")
             .setDescription(
-              "Moneyline (leave blank for even odds. -200 means 2:1 odds, +200 means 1:2 odds)",
+              "Moneyline odds for Yes (leave blank for even odds. -200 means 2:1 odds, +200 means 1:2 odds)",
+            ),
+        )
+        .addIntegerOption((option) =>
+          option
+            .setName("no")
+            .setDescription(
+              "Moneyline odds for No (optional - if not provided, calculated as inverse of Yes)",
             ),
         ),
     )

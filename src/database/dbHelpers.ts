@@ -60,6 +60,7 @@ export function dbRowToBet(row: BetRow): Bet {
     description: row.description,
     type: row.type as BetTypes,
     moneyLine: row.moneyLine || undefined,
+    moneyLineNo: row.moneyLineNo || undefined,
     spread: row.spread || undefined,
     isOpen: Boolean(row.isOpen),
     isSettled: Boolean(row.isSettled),

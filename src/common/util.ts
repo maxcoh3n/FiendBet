@@ -23,7 +23,7 @@ export function betToString(bet: Bet): string {
         ? "**Moneyline:** " +
           moneyLineToString(bet.moneyLine) +
           " Yes/ " +
-          moneyLineToStringNo(bet.moneyLine) +
+          moneyLineToStringNo(bet.moneyLine, bet.moneyLineNo) +
           " No"
         : ""
     }${
@@ -39,7 +39,15 @@ function moneyLineToString(moneyLine: number | undefined): string {
   return moneyLine && moneyLine > 0 ? "+" + moneyLine : "" + moneyLine;
 }
 
-function moneyLineToStringNo(moneyLine: number | undefined): string {
+function moneyLineToStringNo(
+  moneyLine: number | undefined,
+  moneyLineNo: number | undefined,
+): string {
+  // If moneyLineNo is explicitly set, use it
+  if (moneyLineNo !== undefined) {
+    return moneyLineNo > 0 ? "+" + moneyLineNo : "" + moneyLineNo;
+  }
+  // Otherwise, calculate as inverse of moneyLine
   moneyLine = moneyLine ? -1 * moneyLine : 0;
   return moneyLine > 0 ? "+" + Math.abs(moneyLine) : "" + moneyLine;
 }
@@ -96,6 +104,7 @@ export function getPayout(
   isBetWon: boolean,
   type: BetTypes,
   moneyLine: number = 0,
+  moneyLineNo: number | undefined = undefined,
 ): number {
   if (!isBetWon) {
     return -wagerAmount;
@@ -108,9 +117,14 @@ export function getPayout(
         (moneyLine > 0 ? moneyLine / 100 : 100 / (-1 * moneyLine));
     }
     if (choice == false) {
+      // If moneyLineNo is explicitly set, use it; otherwise calculate as inverse
+      const effectiveMoneyLineNo =
+        moneyLineNo !== undefined ? moneyLineNo : -1 * moneyLine;
       payout =
         wagerAmount *
-        (moneyLine < 0 ? (-1 * moneyLine) / 100 : 100 / moneyLine);
+        (effectiveMoneyLineNo > 0
+          ? effectiveMoneyLineNo / 100
+          : 100 / (-1 * effectiveMoneyLineNo));
     }
   } else if (type === BetTypes.SPREAD) {
     payout = wagerAmount;

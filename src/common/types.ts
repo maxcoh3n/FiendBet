@@ -22,7 +22,8 @@ export interface Bet {
   id: number;
   description: string;
   type: BetTypes;
-  moneyLine?: number; // For moneyline bets
+  moneyLine?: number; // For moneyline bets (yes side)
+  moneyLineNo?: number; // For moneyline bets (no side) - if not provided, calculated as -moneyLine
   spread?: number; // For spread bets
   isOpen: boolean;
   isSettled: boolean;

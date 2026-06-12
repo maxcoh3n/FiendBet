@@ -32,7 +32,8 @@ async function handleMoneylineBet(interaction: ChatInputCommandInteraction) {
     false,
   );
 
-  let line = interaction.options.getInteger("line");
+  let yes = interaction.options.getInteger("yes");
+  let no = interaction.options.getInteger("no");
 
   // Validate input
   if (!description && !secretDescription) {
@@ -43,8 +44,11 @@ async function handleMoneylineBet(interaction: ChatInputCommandInteraction) {
     return;
   }
 
-  if (!line) {
-    line = 100;
+  // Calculate missing side from the provided side
+  if (!yes && no) {
+    yes = -1 * no;
+  } else if (!yes) {
+    yes = 100;
   }
 
   if (!description) {
@@ -56,7 +60,8 @@ async function handleMoneylineBet(interaction: ChatInputCommandInteraction) {
     description,
     secretDescription,
     BetTypes.MONEYLINE,
-    line,
+    yes,
+    no || undefined,
   );
 
   if (bet) {

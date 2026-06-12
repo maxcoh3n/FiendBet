@@ -13,6 +13,7 @@ export interface BetRow {
   description: string;
   type: string;
   moneyLine: number | undefined;
+  moneyLineNo: number | undefined;
   spread: number | null;
   isOpen: number;
   isSettled: number;
