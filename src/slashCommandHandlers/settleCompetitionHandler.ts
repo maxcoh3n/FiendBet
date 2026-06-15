@@ -274,7 +274,7 @@ function parsePayoutLines(
       );
     }
 
-    const amount = parseInt(amountString, 10);
+    const amount = parseFloat(amountString);
     if (Number.isNaN(amount)) {
       throw new Error(`Invalid amount for line: "${line}".`);
     }
