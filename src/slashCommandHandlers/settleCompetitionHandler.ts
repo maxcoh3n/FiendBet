@@ -6,7 +6,10 @@ import {
   TextInputBuilder,
   TextInputStyle,
 } from "discord.js";
-import { buildSettleResultsMessage } from "../common/settleHelpers";
+import {
+  buildSettleResultsMessage,
+  roundto2decimal,
+} from "../common/settleHelpers";
 import { CompetitionEntry } from "../common/types";
 import { sendMessageEphemeral } from "../common/util";
 import {
@@ -25,6 +28,7 @@ export async function HandleSettleCompetition(
 ) {
   const competitionId = interaction.options.getInteger("competition_id", true);
   const winner = interaction.options.getUser("winner", false);
+  const startingChips = interaction.options.getInteger("startingchips", false);
 
   const competition = getCompetition(competitionId);
   if (!competition) {
@@ -107,19 +111,27 @@ export async function HandleSettleCompetition(
     return;
   }
 
+  const modalCustomId = startingChips !== null
+    ? `${MODAL_CUSTOM_ID_PREFIX}${competitionId}|${startingChips}`
+    : `${MODAL_CUSTOM_ID_PREFIX}${competitionId}`;
+
   const modal = new ModalBuilder()
-    .setCustomId(`${MODAL_CUSTOM_ID_PREFIX}${competitionId}`)
+    .setCustomId(modalCustomId)
     .setTitle(`Settle Competition #${competitionId}`);
 
   const template = entriesToTemplate(entries);
   const payoutsInput = new TextInputBuilder()
     .setCustomId(MODAL_FIELD_PAYOUTS)
-    .setLabel("Payouts for each entrant")
+    .setLabel(
+      startingChips !== null
+        ? "Ending chips for each entrant"
+        : "Payouts for each entrant",
+    )
     .setStyle(TextInputStyle.Paragraph)
     .setPlaceholder(
       competition.description?.trim()
-        ? `${competition.description}\n\n<@123456789> 100`
-        : "<@123456789> 100",
+        ? `${competition.description}\n\n<@123456789> ${startingChips ?? 100}`
+        : `<@123456789> ${startingChips ?? 100}`,
     )
     .setValue(template)
     .setRequired(true);
@@ -141,10 +153,12 @@ export async function HandleSettleCompetitionModal(
     return;
   }
 
-  const competitionId = parseInt(
-    customId.replace(MODAL_CUSTOM_ID_PREFIX, ""),
-    10,
-  );
+  const customIdSuffix = customId.replace(MODAL_CUSTOM_ID_PREFIX, "");
+  const [competitionIdToken, startingChipsToken] = customIdSuffix.split("|");
+  const competitionId = parseInt(competitionIdToken, 10);
+  const startingChips = startingChipsToken
+    ? parseInt(startingChipsToken, 10)
+    : null;
 
   if (Number.isNaN(competitionId)) {
     await interaction.reply({
@@ -175,7 +189,12 @@ export async function HandleSettleCompetitionModal(
   const rawPayouts = interaction.fields.getTextInputValue(MODAL_FIELD_PAYOUTS);
 
   try {
-    const awards = parsePayoutLines(rawPayouts, entries);
+    const awards = parsePayoutLines(
+      rawPayouts,
+      entries,
+      competition.entryFee,
+      startingChips,
+    );
     const results = settleCompetition(competitionId, awards);
     results.sort((a, b) => b[1] - a[1]);
     const entryCounts = new Map(
@@ -216,6 +235,8 @@ function entriesToTemplate(entries: CompetitionEntry[]): string {
 function parsePayoutLines(
   rawText: string,
   entries: CompetitionEntry[],
+  entryFee: number,
+  startingChips: number | null = null,
 ): Array<{ userId: string; amount: number }> {
   const userMap = new Map<string, string>();
   for (const entry of entries) {
@@ -232,6 +253,10 @@ function parsePayoutLines(
 
   if (!lines.length) {
     throw new Error("Please provide at least one payout line.");
+  }
+
+  if (startingChips !== null && startingChips <= 0) {
+    throw new Error("Starting chips must be greater than zero.");
   }
 
   const awards: Array<{ userId: string; amount: number }> = [];
@@ -283,8 +308,13 @@ function parsePayoutLines(
       throw new Error(`Duplicate payout entry for user ${userId}.`);
     }
 
+    const convertedAmount =
+      startingChips !== null
+        ? roundto2decimal((amount * entryFee) / startingChips)
+        : amount;
+
     seen.add(userId);
-    awards.push({ userId, amount });
+    awards.push({ userId, amount: convertedAmount });
   }
 
   return awards;

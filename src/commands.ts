@@ -167,5 +167,13 @@ export const commands = [
           "The user that won the competition (requires competition award)",
         )
         .setRequired(false),
+    )
+    .addIntegerOption((option) =>
+      option
+        .setName("startingchips")
+        .setDescription(
+          "Optional starting chip count to convert ending chips to FiendBucks",
+        )
+        .setRequired(false),
     ),
 ].map((command) => command.toJSON());
