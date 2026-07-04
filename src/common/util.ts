@@ -98,6 +98,7 @@ export function formatCompetitionCreateMessage(
   );
 }
 
+// returns non rounded payout, useful for preserving win/loss state for tiny wins/losses
 export function getPayout(
   wagerAmount: number,
   choice: boolean | SpreadTypes,
@@ -129,8 +130,8 @@ export function getPayout(
   } else if (type === BetTypes.SPREAD) {
     payout = wagerAmount;
   }
-  // Round to 2 decimal places
-  return Math.round(payout * 100) / 100;
+
+  return payout;
 }
 
 export function roundToTwoDecimals(num: number): number {

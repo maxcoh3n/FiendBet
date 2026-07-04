@@ -9,7 +9,7 @@ import {
   SpreadTypes,
   Wager,
 } from "../common/types";
-import { getPayout } from "../common/util";
+import { getPayout, roundToTwoDecimals } from "../common/util";
 import db from "./db";
 import {
   dbRowToBet,
@@ -259,9 +259,10 @@ export function settleBet(
         bet.moneyLine,
         bet.moneyLineNo,
       );
+      const roundedPayout = roundToTwoDecimals(payout);
 
       // Add payout to fiend's balance
-      updateFiendBalanceStmt.run(payout, wager.userId);
+      updateFiendBalanceStmt.run(roundedPayout, wager.userId);
 
       // Subtract wager amount from fiend's credit (they no longer owe this)
       updateFiendCreditStmt.run(-wager.amount, wager.userId);
