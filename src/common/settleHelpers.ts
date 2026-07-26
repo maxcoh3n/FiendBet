@@ -9,18 +9,25 @@ import {
 
 export type SettleResult = boolean | SpreadTypes;
 
+export type DisplayDescriptionItem = {
+  description: string;
+  secretDescription?: string | null;
+};
+
 export function roundto2decimal(value: number): number {
   return Math.round(value * 100) / 100;
 }
 
-export function getDisplayDescription(bet: Bet): string | undefined {
-  if (bet.description === SecretBetMessage) {
-    return bet.secretDescription;
+export function getDisplayDescription(
+  item: DisplayDescriptionItem,
+): string | undefined {
+  if (item.description === SecretBetMessage) {
+    return item.secretDescription ?? undefined;
   }
-  if (bet.description && bet.secretDescription) {
-    return `${bet.description} - ${bet.secretDescription}`;
+  if (item.description && item.secretDescription) {
+    return `${item.description} - ${item.secretDescription}`;
   }
-  return bet.description;
+  return item.description;
 }
 
 export function parseSettleResult(
@@ -86,14 +93,14 @@ export function buildSettleResultsMessage(
     })
     .join("\n");
 
-  const header = displayDescription
-    ? `${subjectLabel} ID: ${id}) ${displayDescription}`
-    : `${subjectLabel} ID ${id})`;
+  const target = displayDescription
+    ? `${subjectLabel} ${id}) ${displayDescription}`
+    : `${subjectLabel} ${id})`;
 
   const settledLine =
     betResult !== null
-      ? `${header} has been settled with result: ${betResult}.`
-      : `${subjectLabel} #${id} has been settled.`;
+      ? `${target} has been settled with result: ${betResult}.`
+      : `${target} has been settled.`;
 
   return `${settledLine}
 Results:

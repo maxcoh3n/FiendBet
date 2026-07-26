@@ -8,9 +8,10 @@ import {
 } from "discord.js";
 import {
   buildSettleResultsMessage,
+  getDisplayDescription,
   roundto2decimal,
 } from "../common/settleHelpers";
-import { CompetitionEntry } from "../common/types";
+import { Competition, CompetitionEntry } from "../common/types";
 import { sendMessageEphemeral } from "../common/util";
 import {
   getCompetition,
@@ -84,20 +85,7 @@ export async function HandleSettleCompetition(
         amount: entry.userId === winnerId ? competition.award! : 0,
       }));
       const results = settleCompetition(competitionId, awards);
-      results.sort((a, b) => b[1] - a[1]);
-      const entryCounts = new Map(
-        entries.map((entry) => [entry.userId, entry.entries]),
-      );
-      const resultsMessage = buildSettleResultsMessage(
-        competitionId,
-        null,
-        results,
-        competition.description,
-        "Competition",
-        true,
-        entryCounts,
-      );
-      await interaction.reply({ content: resultsMessage });
+      await replyWithCompetitionSettlement(interaction, competition, entries, results);
     } catch (err: any) {
       console.error("Error settling competition:", err);
       await interaction.reply({
@@ -196,22 +184,7 @@ export async function HandleSettleCompetitionModal(
       startingChips,
     );
     const results = settleCompetition(competitionId, awards);
-    results.sort((a, b) => b[1] - a[1]);
-    const entryCounts = new Map(
-      entries.map((entry) => [entry.userId, entry.entries]),
-    );
-    const resultsMessage = buildSettleResultsMessage(
-      competitionId,
-      null,
-      results,
-      competition.description,
-      "Competition",
-      true,
-      entryCounts,
-    );
-    await interaction.reply({
-      content: resultsMessage,
-    });
+    await replyWithCompetitionSettlement(interaction, competition, entries, results);
   } catch (err: any) {
     console.error("Error settling competition:", err);
     await interaction.reply({
@@ -230,6 +203,29 @@ function entriesToTemplate(entries: CompetitionEntry[]): string {
       return `${fiend?.name ?? entry.userId} 0`;
     })
     .join("\n");
+}
+
+async function replyWithCompetitionSettlement(
+  interaction: ChatInputCommandInteraction | ModalSubmitInteraction,
+  competition: Competition,
+  entries: CompetitionEntry[],
+  results: [import("../common/types").Fiend, number][],
+) {
+  results.sort((a, b) => b[1] - a[1]);
+  const entryCounts = new Map(
+    entries.map((entry) => [entry.userId, entry.entries]),
+  );
+  const displayDescription = getDisplayDescription(competition);
+  const resultsMessage = buildSettleResultsMessage(
+    competition.id,
+    null,
+    results,
+    displayDescription,
+    "Competition",
+    true,
+    entryCounts,
+  );
+  await interaction.reply({ content: resultsMessage });
 }
 
 function parsePayoutLines(
